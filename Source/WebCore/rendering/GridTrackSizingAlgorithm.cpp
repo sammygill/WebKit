@@ -1306,8 +1306,17 @@ LayoutUnit GridTrackSizingAlgorithmStrategy::minLogicalSizeForGridItem(RenderBox
     bool isRowAxis = direction() == gridItemInlineDirection;
     if (isRowAxis)
         return isComputingInlineSizeContainment() ? 0_lu : gridItem.computeLogicalWidthInFragmentUsing(MinSize, gridItemMinSize, availableSize.value_or(0), *renderGrid(), nullptr) + GridLayoutFunctions::marginLogicalSizeForGridItem(*renderGrid(), gridItemInlineDirection, gridItem);
+
     bool overrideSizeHasChanged = updateOverridingContainingBlockContentSizeForGridItem(gridItem, gridItemInlineDirection, availableSize);
     layoutGridItemForMinSizeComputation(gridItem, overrideSizeHasChanged);
+
+    // Automatic minimum size should have already been handled in minContributionForGridItem
+    // so if we get here that means the automatic minimum size resolves to 0.
+    if (gridItemMinSize.isAuto()) {
+        ASSERT(gridItem.effectiveOverflowBlockDirection() != Overflow::Visible);
+        return gridItem.logicalHeight();
+    }
+
     GridTrackSizingDirection gridItemBlockDirection = GridLayoutFunctions::flowAwareDirectionForGridItem(*renderGrid(), gridItem, GridTrackSizingDirection::ForRows);
     return gridItem.computeLogicalHeightUsing(MinSize, gridItemMinSize, std::nullopt).value_or(0) + GridLayoutFunctions::marginLogicalSizeForGridItem(*renderGrid(), gridItemBlockDirection, gridItem);
 }
