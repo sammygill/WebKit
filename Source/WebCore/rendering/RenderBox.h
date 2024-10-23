@@ -713,7 +713,8 @@ protected:
         return LayoutUnit((inlineSize - borderPaddingInlineSum) / aspectRatio) + borderPaddingBlockSum;
     }
 
-    void computePreferredLogicalWidths(const Length& logicalMinWidth, const Length& logicalMaxWidth, LayoutUnit borderAndPaddingLogicalWidth);
+    bool shouldComputePreferredLogicalWidthsFromStyle() const;
+    void computePreferredLogicalWidths(const Length& minLogicalWidth, const Length& maxLogicalWidth, LayoutUnit borderAndPaddingLogicalWidth);
     
     bool isAspectRatioDegenerate(double aspectRatio) const { return !aspectRatio || isnan(aspectRatio); }
     
