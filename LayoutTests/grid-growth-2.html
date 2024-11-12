@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<style>
+  main {
+    display: grid;
+    width: 300px;
+  }
+  #editor-container,
+  #stage-container {
+    padding: 20px;
+  }
+  #stage-container {
+    aspect-ratio: 1
+  }
+  #stage {
+    height: 100%;
+  }
+  #stage>svg {
+    height: 100%;
+  }
+</style>
+</head>
+<body>
+  <main>
+    <section id=stage-container>
+      <div id=stage>
+        <svg style="background-color: green;" viewBox="0 0 400 400"></svg>
+      </div>
+    </section>
+  </main>
+</body>
+<script>
+  document.body.offsetHeight;
+  document.body.style.width = "90%";
+  document.body.offsetHeight;
+</script>
