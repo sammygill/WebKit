@@ -558,8 +558,8 @@ void RenderBoxModelObject::computeStickyPositionConstraints(StickyPositionViewpo
     } else {
         containerContentRect = containingBlock->layoutOverflowRect();
         containerContentRect.contract(LayoutBoxExtent {
-            containingBlock->computedCSSPaddingTop(), containingBlock->computedCSSPaddingRight(),
-            containingBlock->computedCSSPaddingBottom(), containingBlock->computedCSSPaddingLeft() });
+            containingBlock->computePaddingTop(), containingBlock->computePaddingRight(),
+            containingBlock->computePaddingBottom(), containingBlock->computePaddingLeft() });
     }
 
     LayoutUnit maxWidth = containingBlock->availableLogicalWidth();

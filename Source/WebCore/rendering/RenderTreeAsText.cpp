@@ -338,10 +338,10 @@ void RenderTreeAsText::writeRenderObject(TextStream& ts, const RenderObject& o, 
         // We want to show any layout padding, both CSS padding and intrinsic padding, so we can't just check o.style().hasPadding().
         if (o.isRenderMathMLBlock() && (box->paddingTop() || box->paddingRight() || box->paddingBottom() || box->paddingLeft())) {
             ts << " [";
-            LayoutUnit cssTop = box->computedCSSPaddingTop();
-            LayoutUnit cssRight = box->computedCSSPaddingRight();
-            LayoutUnit cssBottom = box->computedCSSPaddingBottom();
-            LayoutUnit cssLeft = box->computedCSSPaddingLeft();
+            LayoutUnit cssTop = box->computePaddingTop();
+            LayoutUnit cssRight = box->computePaddingRight();
+            LayoutUnit cssBottom = box->computePaddingBottom();
+            LayoutUnit cssLeft = box->computePaddingLeft();
             if (box->paddingTop() != cssTop || box->paddingRight() != cssRight || box->paddingBottom() != cssBottom || box->paddingLeft() != cssLeft) {
                 ts << "intrinsic ";
                 if (cssTop || cssRight || cssBottom || cssLeft)

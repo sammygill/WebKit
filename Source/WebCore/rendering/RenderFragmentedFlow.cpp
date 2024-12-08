@@ -161,6 +161,7 @@ void RenderFragmentedFlow::layout()
 
 void RenderFragmentedFlow::updateLogicalWidth()
 {
+    setUsedPadding(padding());
     LayoutUnit logicalWidth = initialLogicalWidth();
     for (auto& fragment : m_fragmentList) {
         ASSERT(!fragment.needsLayout() || fragment.isRenderFragmentContainerSet());

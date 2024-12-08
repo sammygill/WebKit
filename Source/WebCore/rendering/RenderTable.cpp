@@ -269,6 +269,7 @@ void RenderTable::updateLogicalWidth()
         return;
     }
 
+    setUsedPadding(padding());
     if (isOutOfFlowPositioned()) {
         LogicalExtentComputedValues computedValues;
         computePositionedLogicalWidth(computedValues);

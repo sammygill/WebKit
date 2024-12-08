@@ -322,6 +322,7 @@ void RenderMultiColumnSet::recordSpaceShortage(LayoutUnit spaceShortage)
 
 void RenderMultiColumnSet::updateLogicalWidth()
 {
+    setUsedPadding(padding());
     setComputedColumnWidthAndCount(multiColumnFlow()->columnWidth(), multiColumnFlow()->columnCount()); // FIXME: This will eventually vary if we are contained inside fragments.
     
     // FIXME: When we add fragments support, we'll start it off at the width of the multi-column

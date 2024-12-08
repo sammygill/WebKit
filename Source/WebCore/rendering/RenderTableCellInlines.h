@@ -59,7 +59,7 @@ inline LayoutUnit RenderTableCell::logicalHeightForRowSizing() const
     // In strict mode, box-sizing: content-box do the right thing and actually add in the border and padding.
     // Call computedCSSPadding* directly to avoid including implicitPadding.
     if (!document().inQuirksMode() && style().boxSizing() != BoxSizing::BorderBox)
-        styleLogicalHeight += computedCSSPaddingBefore() + computedCSSPaddingAfter() + borderBefore() + borderAfter();
+        styleLogicalHeight += computePaddingBefore() + computePaddingAfter() + borderBefore() + borderAfter();
     return std::max(styleLogicalHeight, adjustedLogicalHeight);
 }
 

@@ -284,6 +284,7 @@ void RenderTableCell::computeIntrinsicPadding(LayoutUnit rowHeight)
 
 void RenderTableCell::updateLogicalWidth()
 {
+    setUsedPadding(RenderBoxModelObject::padding());
 }
 
 void RenderTableCell::setCellLogicalWidth(LayoutUnit tableLayoutLogicalWidth)
@@ -326,10 +327,10 @@ void RenderTableCell::layout()
 
 RectEdges<LayoutUnit> RenderTableCell::padding() const
 {
-    auto top = computedCSSPaddingTop();
-    auto right = computedCSSPaddingRight();
-    auto bottom = computedCSSPaddingBottom();
-    auto left = computedCSSPaddingLeft();
+    auto top = computePaddingTop();
+    auto right = computePaddingRight();
+    auto bottom = computePaddingBottom();
+    auto left = computePaddingLeft();
 
     if (isHorizontalWritingMode()) {
         bool isTopToBottom = writingMode().isBlockTopToBottom();
@@ -351,7 +352,7 @@ RectEdges<LayoutUnit> RenderTableCell::padding() const
 
 LayoutUnit RenderTableCell::paddingTop() const
 {
-    LayoutUnit result = computedCSSPaddingTop();
+    LayoutUnit result = computePaddingTop();
     if (!isHorizontalWritingMode())
         return result;
     return result + (writingMode().isBlockTopToBottom() ? intrinsicPaddingBefore() : intrinsicPaddingAfter());
@@ -359,7 +360,7 @@ LayoutUnit RenderTableCell::paddingTop() const
 
 LayoutUnit RenderTableCell::paddingBottom() const
 {
-    LayoutUnit result = computedCSSPaddingBottom();
+    LayoutUnit result = computePaddingBottom();
     if (!isHorizontalWritingMode())
         return result;
     return result + (writingMode().isBlockTopToBottom()? intrinsicPaddingAfter() : intrinsicPaddingBefore());
@@ -367,7 +368,7 @@ LayoutUnit RenderTableCell::paddingBottom() const
 
 LayoutUnit RenderTableCell::paddingLeft() const
 {
-    LayoutUnit result = computedCSSPaddingLeft();
+    LayoutUnit result = computePaddingLeft();
     if (isHorizontalWritingMode())
         return result;
     return result + (writingMode().isBlockLeftToRight() ? intrinsicPaddingBefore() : intrinsicPaddingAfter());
@@ -375,7 +376,7 @@ LayoutUnit RenderTableCell::paddingLeft() const
 
 LayoutUnit RenderTableCell::paddingRight() const
 {   
-    LayoutUnit result = computedCSSPaddingRight();
+    LayoutUnit result = computePaddingRight();
     if (isHorizontalWritingMode())
         return result;
     return result + (writingMode().isBlockLeftToRight() ? intrinsicPaddingAfter() : intrinsicPaddingBefore());
@@ -383,12 +384,12 @@ LayoutUnit RenderTableCell::paddingRight() const
 
 LayoutUnit RenderTableCell::paddingBefore() const
 {
-    return computedCSSPaddingBefore() + intrinsicPaddingBefore();
+    return computePaddingBefore() + intrinsicPaddingBefore();
 }
 
 LayoutUnit RenderTableCell::paddingAfter() const
 {
-    return computedCSSPaddingAfter() + intrinsicPaddingAfter();
+    return computePaddingAfter() + intrinsicPaddingAfter();
 }
 
 void RenderTableCell::setOverridingLogicalHeightFromRowHeight(LayoutUnit rowHeight)

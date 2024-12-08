@@ -2639,7 +2639,7 @@ static RefPtr<CSSValue> zoomAdjustedPaddingPixelValue(const RenderStyle& style, 
 {
     Length unzoomedLength = (style.*lengthGetter)();
     auto* renderBox = dynamicDowncast<RenderBox>(renderer);
-    if (!renderBox || unzoomedLength.isFixed())
+    if (!renderBox)
         return ComputedStyleExtractor::zoomAdjustedPixelValueForLength(unzoomedLength, style);
     return zoomAdjustedPixelValue((renderBox->*computedCSSValueGetter)(), style);
 }
@@ -2653,12 +2653,6 @@ static RefPtr<CSSValue> zoomAdjustedMarginPixelValue(const RenderStyle& style, R
         return ComputedStyleExtractor::zoomAdjustedPixelValueForLength(unzoomedLength, style);
     }
     return zoomAdjustedPixelValue((renderBox->*computedCSSValueGetter)(), style);
-}
-
-template<RenderStyleLengthGetter lengthGetter>
-static bool paddingIsRendererDependent(const RenderStyle* style, RenderObject* renderer)
-{
-    return renderer && style && renderer->isRenderBox() && !(style->*lengthGetter)().isFixed();
 }
 
 static bool positionOffsetValueIsRendererDependent(const RenderStyle* style, RenderObject* renderer)
@@ -2745,11 +2739,6 @@ static FlowRelativeDirection physicalToFlowRelativeDirection(const RenderBox& re
     return mapSidePhysicalToLogical(formattingContextRootStyle(renderer).writingMode(), direction);
 }
 
-static PhysicalDirection flowRelativeToPhysicalDirection(const RenderBox& renderer, FlowRelativeDirection direction)
-{
-    return mapSideLogicalToPhysical(formattingContextRootStyle(renderer).writingMode(), direction);
-}
-
 static MarginTrimType toMarginTrimType(const RenderBox& renderer, CSSPropertyID propertyID)
 {
     auto flowRelativeDirectionToMarginTrimType = [](auto direction) {
@@ -2784,22 +2773,6 @@ static MarginTrimType toMarginTrimType(const RenderBox& renderer, CSSPropertyID 
 }
 
 enum class PropertyType : bool { Padding, Margin };
-static CSSPropertyID toPaddingOrMarginPropertyID(FlowRelativeDirection direction, const RenderBox& renderer, PropertyType type)
-{
-    switch (flowRelativeToPhysicalDirection(renderer, direction)) {
-    case PhysicalDirection::Top:
-        return type == PropertyType::Padding ? CSSPropertyPaddingTop : CSSPropertyMarginTop;
-    case PhysicalDirection::Right:
-        return type == PropertyType::Padding ? CSSPropertyPaddingRight : CSSPropertyMarginRight;
-    case PhysicalDirection::Bottom:
-        return type == PropertyType::Padding ? CSSPropertyPaddingBottom : CSSPropertyMarginBottom;
-    case PhysicalDirection::Left:
-        return type == PropertyType::Padding ? CSSPropertyPaddingLeft : CSSPropertyMarginLeft;
-    default:
-        ASSERT_NOT_REACHED();
-        return { };
-    }
-}
 
 static bool isLayoutDependent(CSSPropertyID propertyID, const RenderStyle* style, RenderObject* renderer)
 {
@@ -2838,35 +2811,17 @@ static bool isLayoutDependent(CSSPropertyID propertyID, const RenderStyle* style
     case CSSPropertyWebkitBackdropFilter: // Ditto for backdrop-filter.
         return true;
     case CSSPropertyPadding:
-        return isLayoutDependent(CSSPropertyPaddingBlock, style, renderer) || isLayoutDependent(CSSPropertyPaddingInline, style, renderer);
     case CSSPropertyPaddingBlock:
-        return isLayoutDependent(CSSPropertyPaddingBlockStart, style, renderer) || isLayoutDependent(CSSPropertyPaddingBlockEnd, style, renderer);
     case CSSPropertyPaddingInline:
-        return isLayoutDependent(CSSPropertyPaddingInlineStart, style, renderer) || isLayoutDependent(CSSPropertyPaddingInlineEnd, style, renderer);
     case CSSPropertyPaddingBlockStart:
-        if (auto* renderBox = dynamicDowncast<RenderBox>(renderer))
-            return isLayoutDependent(toPaddingOrMarginPropertyID(FlowRelativeDirection::BlockStart, *renderBox, PropertyType::Padding), style, renderBox);
-        return false;
     case CSSPropertyPaddingBlockEnd:
-        if (auto* renderBox = dynamicDowncast<RenderBox>(renderer))
-            return isLayoutDependent(toPaddingOrMarginPropertyID(FlowRelativeDirection::BlockEnd, *renderBox, PropertyType::Padding), style, renderBox);
-        return false;
     case CSSPropertyPaddingInlineStart:
-        if (auto* renderBox = dynamicDowncast<RenderBox>(renderer))
-            return isLayoutDependent(toPaddingOrMarginPropertyID(FlowRelativeDirection::InlineStart, *renderBox, PropertyType::Padding), style, renderBox);
-        return false;
     case CSSPropertyPaddingInlineEnd:
-        if (auto* renderBox = dynamicDowncast<RenderBox>(renderer))
-            return isLayoutDependent(toPaddingOrMarginPropertyID(FlowRelativeDirection::InlineEnd, *renderBox, PropertyType::Padding), style, renderBox);
-        return false;
     case CSSPropertyPaddingTop:
-        return paddingIsRendererDependent<&RenderStyle::paddingTop>(style, renderer);
     case CSSPropertyPaddingRight:
-        return paddingIsRendererDependent<&RenderStyle::paddingRight>(style, renderer);
     case CSSPropertyPaddingBottom:
-        return paddingIsRendererDependent<&RenderStyle::paddingBottom>(style, renderer);
     case CSSPropertyPaddingLeft:
-        return paddingIsRendererDependent<&RenderStyle::paddingLeft>(style, renderer);
+        return renderer && style && renderer->isRenderBox();
     case CSSPropertyGridTemplateColumns:
     case CSSPropertyGridTemplateRows:
     case CSSPropertyGridTemplate:
@@ -4093,13 +4048,13 @@ RefPtr<CSSValue> ComputedStyleExtractor::valueForPropertyInStyle(const RenderSty
     case CSSPropertyOverscrollBehaviorY:
         return createConvertingToCSSValueID(style.overscrollBehaviorY());
     case CSSPropertyPaddingTop:
-        return zoomAdjustedPaddingPixelValue<&RenderStyle::paddingTop, &RenderBoxModelObject::computedCSSPaddingTop>(style, renderer);
+        return zoomAdjustedPaddingPixelValue<&RenderStyle::paddingTop, &RenderBoxModelObject::usedPaddingTop>(style, renderer);
     case CSSPropertyPaddingRight:
-        return zoomAdjustedPaddingPixelValue<&RenderStyle::paddingRight, &RenderBoxModelObject::computedCSSPaddingRight>(style, renderer);
+        return zoomAdjustedPaddingPixelValue<&RenderStyle::paddingRight, &RenderBoxModelObject::usedPaddingRight>(style, renderer);
     case CSSPropertyPaddingBottom:
-        return zoomAdjustedPaddingPixelValue<&RenderStyle::paddingBottom, &RenderBoxModelObject::computedCSSPaddingBottom>(style, renderer);
+        return zoomAdjustedPaddingPixelValue<&RenderStyle::paddingBottom, &RenderBoxModelObject::usedPaddingBottom>(style, renderer);
     case CSSPropertyPaddingLeft:
-        return zoomAdjustedPaddingPixelValue<&RenderStyle::paddingLeft, &RenderBoxModelObject::computedCSSPaddingLeft>(style, renderer);
+        return zoomAdjustedPaddingPixelValue<&RenderStyle::paddingLeft, &RenderBoxModelObject::usedPaddingLeft>(style, renderer);
     case CSSPropertyPage:
         // FIXME: This is missing a computed style.
         return nullptr;

@@ -109,6 +109,7 @@ struct SameSizeAsRenderBox : public RenderBoxModelObject {
     virtual ~SameSizeAsRenderBox() = default;
     LayoutRect frameRect;
     LayoutBoxExtent marginBox;
+    LayoutOptionalOutsets paddingBox;
     LayoutUnit preferredLogicalWidths[2];
     void* pointers[1];
 };
@@ -2623,6 +2624,10 @@ void RenderBox::repaintOverhangingFloats(bool)
 void RenderBox::updateLogicalWidth()
 {
     LogicalExtentComputedValues computedValues;
+
+    // set padding values
+    setUsedPadding(padding());
+
     computeLogicalWidthInFragment(computedValues);
 
     setLogicalWidth(computedValues.m_extent);
@@ -3449,7 +3454,7 @@ std::optional<LayoutUnit> RenderBox::computePercentageLogicalHeight(const Length
                 auto overridingLogicalHeight = cb->overridingLogicalHeight();
                 if (!overridingLogicalHeight)
                     return tableCellShouldHaveZeroInitialSize(*cb, *this, scrollsOverflowY()) ? std::optional<LayoutUnit>(0) : std::nullopt;
-                availableHeight = *overridingLogicalHeight - cb->computedCSSPaddingBefore() - cb->computedCSSPaddingAfter() - cb->borderBefore() - cb->borderAfter() - cb->scrollbarLogicalHeight();
+                availableHeight = *overridingLogicalHeight - cb->computePaddingBefore() - cb->computePaddingAfter() - cb->borderBefore() - cb->borderAfter() - cb->scrollbarLogicalHeight();
             }
         } else
             availableHeight = cb->availableLogicalHeightForPercentageComputation();
@@ -3743,7 +3748,7 @@ LayoutUnit RenderBox::availableLogicalHeightUsing(const Length& h, AvailableLogi
     // height, and then when we lay out again we'll use the calculation below.
     if (isRenderTableCell() && (h.isAuto() || h.isPercentOrCalculated())) {
         if (auto overridingLogicalHeight = this->overridingLogicalHeight())
-            return *overridingLogicalHeight - computedCSSPaddingBefore() - computedCSSPaddingAfter() - borderBefore() - borderAfter() - scrollbarLogicalHeight();
+            return *overridingLogicalHeight - computePaddingBefore() - computePaddingAfter() - borderBefore() - borderAfter() - scrollbarLogicalHeight();
         return logicalHeight() - borderAndPaddingLogicalHeight();
     }
 

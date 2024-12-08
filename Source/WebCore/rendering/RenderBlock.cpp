@@ -489,6 +489,12 @@ void RenderBlock::layout()
 {
     StackStats::LayoutCheckPoint layoutCheckPoint;
 
+    // set padding values
+    setUsedPaddingStart(paddingStart());
+    setUsedPaddingEnd(paddingEnd());
+    setUsedPaddingBefore(paddingBefore());
+    setUsedPaddingAfter(paddingAfter());
+
     // Table cells call layoutBlock directly, so don't add any logic here.  Put code into
     // layoutBlock().
     layoutBlock(false);

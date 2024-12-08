@@ -248,6 +248,58 @@ public:
     void setMarginStart(LayoutUnit value) { setMarginStart(value, writingMode()); }
     void setMarginEnd(LayoutUnit value) { setMarginEnd(value, writingMode()); }
 
+
+    void setUsedPadding(LayoutBoxExtent paddingValues) { m_paddingBox = paddingValues; }
+    void setUsedPaddingAfter(LayoutUnit value) { m_paddingBox.setAfter(value, writingMode()); }
+    void setUsedPaddingBefore(LayoutUnit value) { m_paddingBox.setBefore(value, writingMode()); }
+    void setUsedPaddingStart(LayoutUnit value) { m_paddingBox.setStart(value, writingMode()); }
+    void setUsedPaddingEnd(LayoutUnit value) { m_paddingBox.setEnd(value, writingMode()); }
+    void setUsedPaddingTop(LayoutUnit value) { m_paddingBox.setTop(value); }
+    void setUsedPaddingRight(LayoutUnit value) { m_paddingBox.setRight(value); }
+    void setUsedPaddingBottom(LayoutUnit value) { m_paddingBox.setBottom(value); }
+    void setUsedPaddingLeft(LayoutUnit value) { m_paddingBox.setLeft(value); }
+
+    inline LayoutUnit usedPaddingAfter() const override
+    {
+        ASSERT(m_paddingBox.after(writingMode()));
+        return *m_paddingBox.after(writingMode());
+    }
+    inline LayoutUnit usedPaddingBefore() const override
+    {
+        ASSERT(m_paddingBox.before(writingMode()));
+        return *m_paddingBox.before(writingMode());
+    }
+    inline LayoutUnit usedPaddingBottom() const override
+    {
+        ASSERT(m_paddingBox.bottom());
+        return *m_paddingBox.bottom();
+    }
+    inline LayoutUnit usedPaddingEnd() const override
+    {
+        ASSERT(m_paddingBox.end(writingMode()));
+        return *m_paddingBox.end(writingMode());
+    }
+    inline LayoutUnit usedPaddingLeft() const override
+    {
+        ASSERT(m_paddingBox.left());
+        return *m_paddingBox.left();
+    }
+    inline LayoutUnit usedPaddingRight() const override
+    {
+        ASSERT(m_paddingBox.right());
+        return *m_paddingBox.right();
+    }
+    inline LayoutUnit usedPaddingStart() const override
+    {
+        ASSERT(m_paddingBox.start(writingMode()));
+        return *m_paddingBox.start(writingMode());
+    }
+    inline LayoutUnit usedPaddingTop() const override
+    {
+        ASSERT(m_paddingBox.top());
+        return *m_paddingBox.top();
+    }
+
     virtual bool isSelfCollapsingBlock() const { return false; }
     virtual LayoutUnit collapsedMarginBefore() const { return marginBefore(); }
     virtual LayoutUnit collapsedMarginAfter() const { return marginAfter(); }
@@ -778,6 +830,8 @@ private:
 
 protected:
     LayoutBoxExtent m_marginBox;
+
+    LayoutOptionalOutsets m_paddingBox;
 
     // The preferred logical width of the element if it were to break its lines at every possible opportunity.
     LayoutUnit m_minPreferredLogicalWidth;

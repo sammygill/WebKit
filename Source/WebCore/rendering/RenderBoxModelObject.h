@@ -101,15 +101,25 @@ public:
     // This will work on inlines to return the bounding box of all of the lines' border boxes.
     virtual LayoutRect borderBoundingBox() const = 0;
 
+    virtual inline LayoutUnit usedPaddingTop() const;
+    virtual inline LayoutUnit usedPaddingBottom() const;
+    virtual inline LayoutUnit usedPaddingLeft() const;
+    virtual inline LayoutUnit usedPaddingRight() const;
+    virtual inline LayoutUnit usedPaddingBefore() const;
+    virtual inline LayoutUnit usedPaddingAfter() const;
+    virtual inline LayoutUnit usedPaddingStart() const;
+    virtual inline LayoutUnit usedPaddingEnd() const;
+
+
     // These return the CSS computed padding values.
-    inline LayoutUnit computedCSSPaddingTop() const;
-    inline LayoutUnit computedCSSPaddingBottom() const;
-    inline LayoutUnit computedCSSPaddingLeft() const;
-    inline LayoutUnit computedCSSPaddingRight() const;
-    inline LayoutUnit computedCSSPaddingBefore() const;
-    inline LayoutUnit computedCSSPaddingAfter() const;
-    inline LayoutUnit computedCSSPaddingStart() const;
-    inline LayoutUnit computedCSSPaddingEnd() const;
+    inline LayoutUnit computePaddingTop() const;
+    inline LayoutUnit computePaddingBottom() const;
+    inline LayoutUnit computePaddingLeft() const;
+    inline LayoutUnit computePaddingRight() const;
+    inline LayoutUnit computePaddingBefore() const;
+    inline LayoutUnit computePaddingAfter() const;
+    inline LayoutUnit computePaddingStart() const;
+    inline LayoutUnit computePaddingEnd() const;
 
     // These functions are used during layout. Table cells and the MathML
     // code override them to include some extra intrinsic padding.

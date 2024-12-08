@@ -138,6 +138,7 @@ inline int RenderView::viewLogicalWidth() const
 
 void RenderView::updateLogicalWidth()
 {
+    setUsedPadding(padding());
     setLogicalWidth(shouldUsePrintingLayout() ? m_pageLogicalSize->width() : LayoutUnit(viewLogicalWidth()));
 }
 
