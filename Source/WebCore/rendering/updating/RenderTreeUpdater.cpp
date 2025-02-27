@@ -130,6 +130,14 @@ void RenderTreeUpdater::commit(std::unique_ptr<Style::Update> styleUpdate)
         updateRenderTree(*renderingRoot);
     }
 
+
+    WTF_ALWAYS_LOG("RenderTreeUpdater::commit - post render tree update");
+    for (auto [parent, children] : m_builder.m_newlyAddedChildren) {
+        for (auto* child : children)
+            WTF_ALWAYS_LOG("Added " << *parent << " to " << *child);
+    }
+
+
     generatedContent().updateRemainingQuotes();
     generatedContent().updateCounters();
 
@@ -446,6 +454,7 @@ void RenderTreeUpdater::updateElementRenderer(Element& element, const Style::Ele
             return TeardownType::RendererUpdate;
         }();
 
+        WTF_ALWAYS_LOG("RenderTreeUpdater::updateElementRenderer - tearining down renderers for " << element);
         tearDownRenderers(element, teardownType, m_builder);
 
         renderingParent().didCreateOrDestroyChildRenderer = true;
@@ -526,6 +535,9 @@ void RenderTreeUpdater::createRenderer(Element& element, RenderStyle&& style)
 
     if (!insertionPosition.parent().isChildAllowed(*newRenderer, newRenderer->style()))
         return;
+
+
+    WTF_ALWAYS_LOG("RenderTreeUpdater::createRenderer - created renderer for " << element << " insertionPosition ");
 
     element.setRenderer(newRenderer.get());
 

@@ -547,6 +547,14 @@ void RenderBlock::layout()
     StackStats::LayoutCheckPoint layoutCheckPoint;
     OverflowEventDispatcher dispatcher(this);
 
+    WTF_ALWAYS_LOG("RenderBlock::layout - " << * this
+        << " selfNeedsLayout " << selfNeedsLayout() 
+        << " needsPositionedMovementLayout " << needsPositionedMovementLayout()
+        << " posChildNeedsLayout " << normalChildNeedsLayout()
+        << " needsSimplifiedNormalFlowLayout " << needsSimplifiedNormalFlowLayout()
+        << " normalChildNeedsLayout " << normalChildNeedsLayout()
+    );
+
     // Table cells call layoutBlock directly, so don't add any logic here.  Put code into
     // layoutBlock().
     layoutBlock(RelayoutChildren::No);

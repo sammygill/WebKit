@@ -468,7 +468,15 @@ void RenderTreeBuilder::attachToRenderElementInternal(RenderElement& parent, Ren
             listItemRenderer->updateListMarkerNumbers();
     }
 
+    WTF_ALWAYS_LOG("RenderTreeBuilder::attachToRenderElementInternal - attaching " << *newChild << " to " << parent);
+
+    if (auto itr = m_newlyAddedChildren.find(&parent); itr != m_newlyAddedChildren.end()) {
+        itr->value.append(newChild);
+    } else
+        m_newlyAddedChildren.set(&parent, Vector{ newChild });
+
     newChild->setNeedsLayoutAndPrefWidthsRecalc();
+
     auto isOutOfFlowBox = newChild->style().hasOutOfFlowPosition();
     if (!isOutOfFlowBox)
         parent.setPreferredLogicalWidthsDirty(true);

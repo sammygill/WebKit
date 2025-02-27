@@ -68,6 +68,8 @@ public:
 
     bool hasBrokenContinuation() const { return m_hasBrokenContinuation; }
 
+    HashMap<RenderElement*, Vector<RenderObject*>> m_newlyAddedChildren;
+
 private:
     static void markBoxForRelayoutAfterSplit(RenderBox&);
 

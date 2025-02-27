@@ -349,7 +349,26 @@ void RenderGrid::layoutGrid(RelayoutChildren relayoutChildren)
 
         resetLogicalHeightBeforeLayoutIfNeeded();
 
-        updateLogicalWidth();
+
+        auto tracksAreSpaceBased = [&](GridTrackSizingDirection direction) {
+            auto& tracks = style().gridTrackSizes(direction);
+            for (auto& track : tracks) {
+                if (track.isContentSized())
+                    return false;
+            }
+            return true;
+        };
+
+
+        bool logicalWidthChanged = recomputeLogicalWidth();
+
+
+        if (!logicalWidthChanged && tracksAreSpaceBased(GridTrackSizingDirection::ForColumns) && tracksAreSpaceBased(GridTrackSizingDirection::ForRows)) {
+            for (auto& gridItem : childrenOfType<RenderBox>(*this))
+                gridItem.layoutIfNeeded();
+            clearNeedsLayout();
+            return;
+        }
 
         // Fieldsets need to find their legend and position it inside the border of the object.
         // The legend then gets skipped during normal layout. The same is true for ruby text.
