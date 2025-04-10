@@ -129,6 +129,9 @@ public:
         
     void layoutBlock(RelayoutChildren, LayoutUnit pageLogicalHeight = 0_lu) override;
 
+    std::optional<bool> m_hasBlocksWithInlineDamageOnly;
+
+
 protected:
     void willBeDestroyed() override;
 

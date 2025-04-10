@@ -471,6 +471,14 @@ void RenderTreeBuilder::attachToRenderElementInternal(RenderElement& parent, Ren
     newChild->insertedIntoTree();
     invalidateLineLayout(*newChild, IsRemoval::No);
 
+
+    if (auto* renderBlockFlowGrandParent = dynamicDowncast<RenderBlockFlow>(parent.parent()); renderBlockFlowGrandParent) {
+        if (renderBlockFlowGrandParent->m_hasBlocksWithInlineDamageOnly.has_value())
+            renderBlockFlowGrandParent->m_hasBlocksWithInlineDamageOnly = *renderBlockFlowGrandParent->m_hasBlocksWithInlineDamageOnly && newChild->isRenderInline();
+        else
+            renderBlockFlowGrandParent->m_hasBlocksWithInlineDamageOnly = newChild->isInline();
+    }
+
     if (m_internalMovesType == IsInternalMove::No) {
         newChild->initializeFragmentedFlowStateOnInsertion();
         if (CheckedPtr fragmentedFlow = dynamicDowncast<RenderMultiColumnFlow>(newChild->enclosingFragmentedFlow()))

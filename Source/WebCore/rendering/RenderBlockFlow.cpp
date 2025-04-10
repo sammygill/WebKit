@@ -489,8 +489,13 @@ void RenderBlockFlow::layoutBlock(RelayoutChildren relayoutChildren, LayoutUnit 
 {
     ASSERT(needsLayout());
 
-    if (relayoutChildren == RelayoutChildren::No && simplifiedLayout())
+
+    WTF_ALWAYS_LOG("RenderBlockFlow::layoutBlock - " << *this << " m_hasBlocksWithInlineDamageOnly " << m_hasBlocksWithInlineDamageOnly);
+
+    if (relayoutChildren == RelayoutChildren::No && simplifiedLayout()) {
+        m_hasBlocksWithInlineDamageOnly.reset();
         return;
+    }
 
     auto isPaginated = [&] {
         // FIXME: Grid calls into layout outside of regular layout phase (during preferred width computation).
@@ -499,8 +504,18 @@ void RenderBlockFlow::layoutBlock(RelayoutChildren relayoutChildren, LayoutUnit 
         return false;
     }();
 
-    if (!firstChild() && !isPaginated && !is<RenderMultiColumnSet>(*this))
+    if (!firstChild() && !isPaginated && !is<RenderMultiColumnSet>(*this)) {
+        m_hasBlocksWithInlineDamageOnly.reset();
         return layoutBlockWithNoChildren();
+    }
+
+    if (!selfNeedsLayout() && m_hasBlocksWithInlineDamageOnly && *m_hasBlocksWithInlineDamageOnly) {
+        WTF_ALWAYS_LOG("optimization for " << *this);
+        for (auto& child : childrenOfType<RenderBox>(*this))
+            child.layoutIfNeeded();
+        clearNeedsLayout();
+        return;
+    }
 
     LayoutRepainter repainter(*this);
 
@@ -672,6 +687,7 @@ void RenderBlockFlow::layoutBlock(RelayoutChildren relayoutChildren, LayoutUnit 
         }
     }
 
+    m_hasBlocksWithInlineDamageOnly.reset();
     clearNeedsLayout();
 }
 
