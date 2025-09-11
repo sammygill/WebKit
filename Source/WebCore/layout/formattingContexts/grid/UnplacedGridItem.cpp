@@ -24,15 +24,14 @@
  */
 
 #include "config.h"
-#include "GridLayout.h"
+#include "UnplacedGridItem.h"
 
 namespace WebCore {
 namespace Layout {
-GridLayout::GridLayout(const GridFormattingContext& gridFormattingContext)
-    : m_gridFormattingContext(gridFormattingContext)
+UnplacedGridItem::UnplacedGridItem(const ElementBox& layoutBox)
+    : m_layoutBox(layoutBox)
 {
 }
 
-void GridLayout::layout(GridFormattingContext::GridLayoutConstraints, UnplacedGridItems) { }
 } // namespace Layout
 } // namespace WebCore

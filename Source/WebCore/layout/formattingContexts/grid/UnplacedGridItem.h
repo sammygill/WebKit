@@ -23,16 +23,20 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "GridLayout.h"
+#pragma once
+
+#include "LayoutElementBox.h"
+#include "StyleGridPosition.h"
 
 namespace WebCore {
 namespace Layout {
-GridLayout::GridLayout(const GridFormattingContext& gridFormattingContext)
-    : m_gridFormattingContext(gridFormattingContext)
-{
-}
 
-void GridLayout::layout(GridFormattingContext::GridLayoutConstraints, UnplacedGridItems) { }
-} // namespace Layout
-} // namespace WebCore
+class UnplacedGridItem {
+public:
+    UnplacedGridItem(const ElementBox&);
+private:
+    const CheckedRef<const ElementBox> m_layoutBox;
+};
+
+}
+}
