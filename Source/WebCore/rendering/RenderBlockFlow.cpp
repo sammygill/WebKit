@@ -47,6 +47,7 @@
 #include "LegacyLineLayout.h"
 #include "LegacyRootInlineBox.h"
 #include "LineClampUpdater.h"
+#include "style/values/box/StyleScaledPadding.h"
 #include "LineSelection.h"
 #include "LocalFrame.h"
 #include "Logging.h"
@@ -524,6 +525,9 @@ void RenderBlockFlow::layoutBlockWithNoChildren()
 void RenderBlockFlow::layoutBlock(RelayoutChildren relayoutChildren, LayoutUnit pageLogicalHeight)
 {
     ASSERT(needsLayout());
+
+    Style::ScaledPaddingEdge x(Style::ScaledPaddingEdge::Fixed(1.0f), Style::ZoomFactor { 1.0f, 1.0f });
+    UNUSED_VARIABLE(x);
 
     if (relayoutChildren == RelayoutChildren::No && simplifiedLayout())
         return;

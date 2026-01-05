@@ -69,12 +69,15 @@ template<typename Numeric, CSS::PrimitiveKeyword... Ks> struct LengthWrapperBase
 
     LengthWrapperBase(CSS::ValidKeywordForList<Keywords> auto keyword) : m_value(Keywords::offsetForKeyword(keyword)) { }
 
-    LengthWrapperBase(Fixed fixed) : m_value(indexForFixed, fixed.unresolvedValue()) { }
+    LengthWrapperBase(Fixed fixed) requires (Fixed::range.zoomOptions != CSS::RangeZoomOptions::Zoomed) : m_value(indexForFixed, fixed.unresolvedValue()) { }
     LengthWrapperBase(Fixed fixed, bool hasQuirk) : m_value(indexForFixed, fixed.unresolvedValue(), hasQuirk) { }
+
+    LengthWrapperBase(Fixed fixed, ZoomFactor) requires (Fixed::range.zoomOptions == CSS::RangeZoomOptions::Zoomed) : m_value(indexForFixed, fixed.unresolvedValue()) { }
+
     LengthWrapperBase(Percentage percent) : m_value(indexForPercentage, percent.value) { }
     LengthWrapperBase(Calc&& calc) : m_value(indexForCalc, calc.protectedCalculation()) { }
-    LengthWrapperBase(Specified&& specified) : m_value(toData(specified)) { }
-    LengthWrapperBase(const Specified& specified) : m_value(toData(specified)) { }
+    LengthWrapperBase(Specified&& specified) requires (Fixed::range.zoomOptions != CSS::RangeZoomOptions::Zoomed) : m_value(toData(specified)) { }
+    LengthWrapperBase(const Specified& specified) requires (Fixed::range.zoomOptions != CSS::RangeZoomOptions::Zoomed) : m_value(toData(specified)) { }
 
     LengthWrapperBase(CSS::ValueLiteral<CSS::LengthUnit::Px> literal) : LengthWrapperBase(Fixed { literal }) { }
     LengthWrapperBase(CSS::ValueLiteral<CSS::PercentageUnit::Percentage> literal) : LengthWrapperBase(Percentage { literal }) { }

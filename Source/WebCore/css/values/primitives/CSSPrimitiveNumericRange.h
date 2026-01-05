@@ -56,12 +56,13 @@ enum class RangeClampOptions {
 // Options to indicate how the primitive should consider its value with regards to zoom.
 // NOTE: This option is only meaningful for Style::Length`.
 // FIXME: These options are temporary while `zoom` is moving from style building time to use time.
-enum class RangeZoomOptions : bool {
+enum class RangeZoomOptions : uint8_t {
     // `Default` indicates the value held in the primitive has had zoom applied to it.
     Default,
 
     // `Unzoomed` indicates the value held in the primitive has NOT had zoom applied to it.
-    Unzoomed
+    Unzoomed,
+    Zoomed
 };
 
 // Representation for `CSS bracketed range notation`. Represents a closed range between (and including) `min` and `max`.
@@ -93,6 +94,7 @@ inline constexpr auto AllUnzoomed = Range { -Range::infinity, Range::infinity, R
 // Constant value for `[0,∞]`.
 inline constexpr auto Nonnegative = Range { 0, Range::infinity };
 inline constexpr auto NonnegativeUnzoomed = Range { 0, Range::infinity, RangeClampOptions::Default, RangeZoomOptions::Unzoomed };
+inline constexpr auto NonnegativeZoomed = Range { 0, Range::infinity, RangeClampOptions::Default, RangeZoomOptions::Zoomed };
 
 // Constant value for `[1,∞]`.
 inline constexpr auto Positive = Range { 1, Range::infinity };

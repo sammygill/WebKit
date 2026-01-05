@@ -30,6 +30,7 @@
 #include <WebCore/PseudoElementIdentifier.h>
 #include <WebCore/StyleGridAutoFlow.h>
 #include <WebCore/StylePrimitiveNumeric+Forward.h>
+#include <WebCore/StyleScaledPadding.h>
 #include <WebCore/WritingMode.h>
 #include <unicode/utypes.h>
 #include <wtf/CheckedRef.h>

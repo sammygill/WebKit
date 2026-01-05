@@ -4295,6 +4295,7 @@
 		A554B5F31E38393A001D4E03 /* PerformanceUserTiming.h in Headers */ = {isa = PBXBuildFile; fileRef = A554B5F11E383936001D4E03 /* PerformanceUserTiming.h */; };
 		A55639D11C6F09E300806D8E /* WorkerConsoleClient.h in Headers */ = {isa = PBXBuildFile; fileRef = A55639D01C6EFD5900806D8E /* WorkerConsoleClient.h */; };
 		A5582D622E72254D00F97055 /* UnplacedGridItem.h in Headers */ = {isa = PBXBuildFile; fileRef = A5582D602E72254700F97055 /* UnplacedGridItem.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		A56269862F0B350200083D3C /* StyleScaledPadding.h in Headers */ = {isa = PBXBuildFile; fileRef = A56269852F0B350200083D3C /* StyleScaledPadding.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		A56621752A0EFEBE00FF32E4 /* BaselineAlignment.h in Headers */ = {isa = PBXBuildFile; fileRef = A56621742A0EFE2900FF32E4 /* BaselineAlignment.h */; };
 		A5732B0B136A161D005C8D7C /* DateComponents.h in Headers */ = {isa = PBXBuildFile; fileRef = A5732B09136A161D005C8D7C /* DateComponents.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		A578F4351DE00EEB003DFC6A /* PromiseRejectionEvent.h in Headers */ = {isa = PBXBuildFile; fileRef = A578F4331DE00ED6003DFC6A /* PromiseRejectionEvent.h */; };
@@ -17013,6 +17014,7 @@
 		A55639D01C6EFD5900806D8E /* WorkerConsoleClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WorkerConsoleClient.h; sourceTree = "<group>"; };
 		A5582D602E72254700F97055 /* UnplacedGridItem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = UnplacedGridItem.h; sourceTree = "<group>"; };
 		A5582D612E72254700F97055 /* UnplacedGridItem.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = UnplacedGridItem.cpp; sourceTree = "<group>"; };
+		A56269852F0B350200083D3C /* StyleScaledPadding.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = StyleScaledPadding.h; sourceTree = "<group>"; };
 		A56621732A0EFE2900FF32E4 /* BaselineAlignment.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = BaselineAlignment.cpp; sourceTree = "<group>"; };
 		A56621742A0EFE2900FF32E4 /* BaselineAlignment.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BaselineAlignment.h; sourceTree = "<group>"; };
 		A5732B08136A161D005C8D7C /* DateComponents.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DateComponents.cpp; sourceTree = "<group>"; };
@@ -37239,6 +37241,7 @@
 				BC7CEF5E2EC3C2EF008664ED /* StyleMarginTrim.cpp */,
 				BC7CEF5D2EC3C2EF008664ED /* StyleMarginTrim.h */,
 				BC9ABA122DECC1CA00F7E52D /* StylePadding.h */,
+				A56269852F0B350200083D3C /* StyleScaledPadding.h */,
 			);
 			path = box;
 			sourceTree = "<group>";
@@ -47418,6 +47421,7 @@
 				E4946EAF156E64DD00D3297F /* StyleRuleImport.h in Headers */,
 				0F94F37E23661626003AA5C7 /* StyleRuleType.h in Headers */,
 				BC3CC1F22DE3ECF30032971C /* StyleScale.h in Headers */,
+				A56269862F0B350200083D3C /* StyleScaledPadding.h in Headers */,
 				BC4F32B42E89C4DA00F6AEC1 /* StyleScaleTransformFunction.h in Headers */,
 				E461D65F1BB0C80D00CB5645 /* StyleScope.h in Headers */,
 				EEE349082DE0061C00A7D4BB /* StyleScopeIdentifier.h in Headers */,

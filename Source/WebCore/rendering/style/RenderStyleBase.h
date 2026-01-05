@@ -27,8 +27,12 @@
 #pragma once
 
 #include <WebCore/StyleComputedStyle.h>
+#include <WebCore/StyleScaledPadding.h>
+#include <WebCore/CSSPrimitiveNumericUnits.h>
 
 namespace WebCore {
+
+using namespace CSS::Literals;
 
 DECLARE_ALLOCATOR_WITH_HEAP_IDENTIFIER(RenderStyleBase);
 class RenderStyleBase : public CanMakeCheckedPtr<RenderStyleBase, WTF::DefaultedOperatorEqual::No, WTF::CheckedPtrDeleteCheckException::Yes> {
@@ -329,6 +333,8 @@ protected:
     RenderStyleBase(RenderStyleBase&, RenderStyleBase&&);
 
     Style::ComputedStyle m_computedStyle;
+
+    Style::ScaledPaddingBox m_paddingBox { Style::ScaledPaddingEdge { 0_css_px, Style::ZoomFactor { 1.0f, 1.0f }  } };
 };
 
 } // namespace WebCore
