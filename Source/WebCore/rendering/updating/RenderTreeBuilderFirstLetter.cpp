@@ -54,7 +54,7 @@ static std::optional<RenderStyle> styleForFirstLetter(const RenderElement& first
 
     // If we have an initial letter drop that is >= 1, then we need to force floating to be on.
     if (firstLetterStyle.initialLetter().drop() >= 1 && !firstLetterStyle.isFloating())
-        firstLetterStyle.setFloating(firstLetterStyle.writingMode().isBidiLTR() ? Float::Left : Float::Right);
+        firstLetterStyle.setComputedFloating(firstLetterStyle.writingMode().isBidiLTR() ? Float::Left : Float::Right);
 
     // We have to compute the correct font-size for the first-letter if it has an initial letter height set.
     auto* paragraph = firstLetterContainer.isRenderBlockFlow() ? &firstLetterContainer : firstLetterContainer.containingBlock();
@@ -64,7 +64,7 @@ static std::optional<RenderStyle> styleForFirstLetter(const RenderElement& first
         // For an N-line first-letter and for alphabetic baselines, the cap-height of the first letter needs to equal (N-1)*line-height of paragraph lines + cap-height of the paragraph
         // Mathematically we can't rely on font-size, since font().height() doesn't necessarily match. For reliability, the best approach is simply to
         // compare the final measured cap-heights of the two fonts in order to get to the closest possible value.
-        firstLetterStyle.setLineBoxContain({ Style::WebkitLineBoxContainValue::InitialLetter });
+        firstLetterStyle.setComputedLineBoxContain({ Style::WebkitLineBoxContainValue::InitialLetter });
         int lineHeight = paragraph->style().computedLineHeight();
 
         // Set the font to be one line too big and then ratchet back to get to a precise fit. We can't just set the desired font size based off font height metrics
@@ -89,9 +89,9 @@ static std::optional<RenderStyle> styleForFirstLetter(const RenderElement& first
 
     firstLetterStyle.setPseudoElementIdentifier({ { PseudoElementType::FirstLetter } });
     // Force inline display (except for floating first-letters).
-    firstLetterStyle.setDisplay(firstLetterStyle.isFloating() ? DisplayType::Block : DisplayType::Inline);
+    firstLetterStyle.setComputedDisplay(firstLetterStyle.isFloating() ? DisplayType::Block : DisplayType::Inline);
     // CSS2 says first-letter can't be positioned.
-    firstLetterStyle.setPosition(PositionType::Static);
+    firstLetterStyle.setComputedPosition(PositionType::Static);
 
     return firstLetterStyle;
 }

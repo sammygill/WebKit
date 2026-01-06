@@ -200,7 +200,7 @@ void RenderTreeBuilder::Inline::attachIgnoringContinuation(RenderInline& parent,
         // If inside an inline affected by in-flow positioning the block needs to be affected by it too.
         // Giving the block a layer like this allows it to collect the x/y offsets from inline parents later.
         if (auto positionedAncestor = inFlowPositionedInlineAncestor(parent))
-            newStyle.setPosition(positionedAncestor->style().position());
+            newStyle.setComputedPosition(positionedAncestor->style().position());
 
         auto newBox = createRenderer<RenderBlockFlow>(RenderObject::Type::BlockFlow, parent.document(), WTF::move(newStyle));
         newBox->initializeStyle();

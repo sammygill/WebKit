@@ -158,7 +158,7 @@ static void updateStyleOfAnonymousBlockContinuations(const RenderBlock& block, c
         if (oldStyle->hasInFlowPosition() && inFlowPositionedInlineAncestor(continuation))
             continue;
         auto blockStyle = RenderStyle::createAnonymousStyleWithDisplay(block->style(), DisplayType::Block);
-        blockStyle.setPosition(newStyle->position());
+        blockStyle.setComputedPosition(newStyle->position());
         block->setStyle(WTF::move(blockStyle));
     }
 }

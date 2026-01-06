@@ -151,9 +151,9 @@ void BuilderState::adjustStyleForInterCharacterRuby()
     if (!m_style.isInterCharacterRubyPosition() || !element() || !element()->hasTagName(HTMLNames::rtTag))
         return;
 
-    m_style.setTextAlign(TextAlign::Center);
+    m_style.setComputedTextAlign(TextAlign::Center);
     if (!m_style.writingMode().isVerticalTypographic())
-        m_style.setWritingMode(StyleWritingMode::VerticalLr);
+        m_style.setComputedWritingMode(StyleWritingMode::VerticalLr);
 }
 
 void BuilderState::updateFont()

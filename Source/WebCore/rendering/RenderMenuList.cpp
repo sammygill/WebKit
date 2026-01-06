@@ -122,8 +122,8 @@ void RenderMenuList::setInnerRenderer(RenderBlock& innerRenderer)
 void RenderMenuList::adjustInnerStyle()
 {
     auto& innerStyle = m_innerBlock->mutableStyle();
-    innerStyle.setFlexGrow(1);
-    innerStyle.setFlexShrink(1);
+    innerStyle.setComputedFlexGrow(1);
+    innerStyle.setComputedFlexShrink(1);
     // min-width: 0; is needed for correct shrinking.
     innerStyle.setLogicalMinWidth(0_css_px);
     // Use margin:auto instead of align-items:center to get safe centering, i.e.
@@ -132,7 +132,7 @@ void RenderMenuList::adjustInnerStyle()
     if (style().alignItems().isCenter()) {
         innerStyle.setMarginBefore(CSS::Keyword::Auto { });
         innerStyle.setMarginAfter(CSS::Keyword::Auto { });
-        innerStyle.setAlignSelf(CSS::Keyword::FlexStart { });
+        innerStyle.setComputedAlignSelf(CSS::Keyword::FlexStart { });
     }
 
     auto paddingBox = theme().popupInternalPaddingBox(style());
@@ -144,12 +144,12 @@ void RenderMenuList::adjustInnerStyle()
     if (document().page()->chrome().selectItemWritingDirectionIsNatural()) {
         // Items in the popup will not respect the CSS text-align and direction properties,
         // so we must adjust our own style to match.
-        innerStyle.setTextAlign(Style::TextAlign::Left);
+        innerStyle.setComputedTextAlign(Style::TextAlign::Left);
         TextDirection direction = (m_buttonText && m_buttonText->text().defaultWritingDirection() == U_RIGHT_TO_LEFT) ? TextDirection::RTL : TextDirection::LTR;
-        innerStyle.setDirection(direction);
+        innerStyle.setComputedDirection(direction);
 #if PLATFORM(IOS_FAMILY)
     } else if (document().page()->chrome().selectItemAlignmentFollowsMenuWritingDirection()) {
-        innerStyle.setTextAlign(writingMode().isBidiLTR() ? Style::TextAlign::Left : Style::TextAlign::Right);
+        innerStyle.setComputedTextAlign(writingMode().isBidiLTR() ? Style::TextAlign::Left : Style::TextAlign::Right);
         TextDirection direction;
         UnicodeBidi unicodeBidi;
         if (multiple() && selectedOptionCount(*this) != 1) {
@@ -163,17 +163,17 @@ void RenderMenuList::adjustInnerStyle()
             unicodeBidi = style().unicodeBidi();
         }
 
-        innerStyle.setDirection(direction);
-        innerStyle.setUnicodeBidi(unicodeBidi);
+        innerStyle.setComputedDirection(direction);
+        innerStyle.setComputedUnicodeBidi(unicodeBidi);
     }
 #else
     } else if (m_optionStyle && document().page()->chrome().selectItemAlignmentFollowsMenuWritingDirection()) {
         if ((m_optionStyle->writingMode().bidiDirection() != innerStyle.writingMode().bidiDirection()
             || m_optionStyle->unicodeBidi() != innerStyle.unicodeBidi()))
             m_innerBlock->setNeedsLayoutAndPreferredWidthsUpdate();
-        innerStyle.setTextAlign(writingMode().isBidiLTR() ? Style::TextAlign::Left : Style::TextAlign::Right);
-        innerStyle.setDirection(m_optionStyle->writingMode().bidiDirection());
-        innerStyle.setUnicodeBidi(m_optionStyle->unicodeBidi());
+        innerStyle.setComputedTextAlign(writingMode().isBidiLTR() ? Style::TextAlign::Left : Style::TextAlign::Right);
+        innerStyle.setComputedDirection(m_optionStyle->writingMode().bidiDirection());
+        innerStyle.setComputedUnicodeBidi(m_optionStyle->unicodeBidi());
     }
 #endif // !PLATFORM(IOS_FAMILY)
 

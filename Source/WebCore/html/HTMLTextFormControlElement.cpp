@@ -923,13 +923,13 @@ void HTMLTextFormControlElement::adjustInnerTextStyle(const RenderStyle& parentS
 {
     // The inner block, if present, always has its direction set to LTR,
     // so we need to inherit the direction and unicode-bidi style from the element.
-    textBlockStyle.setDirection(parentStyle.writingMode().computedTextDirection());
-    textBlockStyle.setUnicodeBidi(parentStyle.unicodeBidi());
+    textBlockStyle.setComputedDirection(parentStyle.writingMode().computedTextDirection());
+    textBlockStyle.setComputedUnicodeBidi(parentStyle.unicodeBidi());
 
     if (auto innerText = innerTextElement()) {
         if (RefPtr properties = innerText->presentationalHintStyle()) {
             if (auto value = properties->propertyAsValueID(CSSPropertyWebkitUserModify))
-                textBlockStyle.setUserModify(fromCSSValueID<UserModify>(*value));
+                textBlockStyle.setComputedUserModify(fromCSSValueID<UserModify>(*value));
         }
     }
 
@@ -958,7 +958,7 @@ void HTMLTextFormControlElement::adjustInnerTextStyle(const RenderStyle& parentS
             break;
         }
 
-        textBlockStyle.setDirection(TextDirection::LTR);
+        textBlockStyle.setComputedDirection(TextDirection::LTR);
     }
 #endif
 }

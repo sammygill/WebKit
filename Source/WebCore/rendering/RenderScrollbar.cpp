@@ -160,7 +160,7 @@ std::unique_ptr<RenderStyle> RenderScrollbar::getScrollbarPseudoStyle(ScrollbarP
     // This is because WebKit assumes scrollbar to be always painted and missing background
     // causes visual artifact like non-repainted dirty region.
     if (result && m_owningFrame && m_owningFrame->view() && !m_owningFrame->view()->isTransparent() && !result->hasBackground())
-        result->setBackgroundColor(Color::white);
+        result->setComputedBackgroundColor(Color::white);
 
     return result;
 }

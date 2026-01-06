@@ -386,7 +386,7 @@ void RenderTreeUpdater::GeneratedContent::updateWritingSuggestionsRenderer(Rende
     nodeBeforeWritingSuggestionsTextRenderer->setText(prefix);
 
     auto newStyle = RenderStyle::clone(*style);
-    newStyle.setDisplay(DisplayType::Inline);
+    newStyle.setComputedDisplay(DisplayType::Inline);
 
     if (auto writingSuggestionsRenderer = editor.writingSuggestionRenderer()) {
         writingSuggestionsRenderer->setStyle(WTF::move(newStyle), minimalStyleDifference);

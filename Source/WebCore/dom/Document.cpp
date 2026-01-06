@@ -3920,7 +3920,7 @@ void Document::setVisuallyOrdered()
 {
     m_visuallyOrdered = true;
     if (CheckedPtr renderView = this->renderView())
-        renderView->mutableStyle().setRTLOrdering(Order::Visual);
+        renderView->mutableStyle().setComputedRTLOrdering(Order::Visual);
 }
 
 Ref<DocumentParser> Document::createParser()

@@ -140,13 +140,13 @@ void RenderSliderContainer::layout()
     Ref input = downcast<HTMLInputElement>(*protectedElement()->shadowHost());
     bool isVertical = hasVerticalAppearance(input);
     CheckedRef mutableStyle = this->mutableStyle();
-    mutableStyle->setFlexDirection(isVertical && writingMode().isHorizontal() ? FlexDirection::Column : FlexDirection::Row);
+    mutableStyle->setComputedFlexDirection(isVertical && writingMode().isHorizontal() ? FlexDirection::Column : FlexDirection::Row);
     auto oldTextDirection = writingMode().computedTextDirection();
     if (isVertical) {
         // FIXME: Work around rounding issues in RTL vertical sliders. We want them to
         // render identically to LTR vertical sliders. We can remove this work around when
         // subpixel rendering is enabled on all ports.
-        mutableStyle->setDirection(TextDirection::LTR);
+        mutableStyle->setComputedDirection(TextDirection::LTR);
     }
 
     CheckedPtr thumb = input->sliderThumbElement() ? input->protectedSliderThumbElement()->renderBox() : nullptr;
@@ -158,7 +158,7 @@ void RenderSliderContainer::layout()
 
     RenderFlexibleBox::layout();
 
-    mutableStyle->setDirection(oldTextDirection);
+    mutableStyle->setComputedDirection(oldTextDirection);
     // These should always exist, unless someone mutates the shadow DOM (e.g., in the inspector).
     if (!thumb || !track)
         return;

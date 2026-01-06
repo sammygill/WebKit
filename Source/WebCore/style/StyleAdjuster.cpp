@@ -117,16 +117,16 @@ static void addIntrinsicMargins(RenderStyle& style)
     // FIXME: Using "hasQuirk" to decide the margin wasn't set is kind of lame.
     if (style.width().isIntrinsicOrLegacyIntrinsicOrAuto()) {
         if (style.marginLeft().hasQuirk())
-            style.setMarginLeft(intrinsicMargin);
+            style.setComputedMarginLeft(intrinsicMargin);
         if (style.marginRight().hasQuirk())
-            style.setMarginRight(intrinsicMargin);
+            style.setComputedMarginRight(intrinsicMargin);
     }
 
     if (style.height().isAuto()) {
         if (style.marginTop().hasQuirk())
-            style.setMarginTop(intrinsicMargin);
+            style.setComputedMarginTop(intrinsicMargin);
         if (style.marginBottom().hasQuirk())
-            style.setMarginBottom(intrinsicMargin);
+            style.setComputedMarginBottom(intrinsicMargin);
     }
 }
 #endif
@@ -543,21 +543,21 @@ void Adjuster::adjust(RenderStyle& style) const
 
     if (m_element && (m_element->hasTagName(frameTag) || m_element->hasTagName(framesetTag))) {
         // Framesets ignore display, position and float properties.
-        style.setPosition(PositionType::Static);
+        style.setComputedPosition(PositionType::Static);
         style.setEffectiveDisplay(DisplayType::Block);
-        style.setFloating(Float::None);
+        style.setComputedFloating(Float::None);
     }
 
     if (style.display() != DisplayType::None && style.display() != DisplayType::Contents) {
         if (RefPtr element = m_element) {
             // Tables never support the -webkit-* values for text-align and will reset back to the default.
             if (is<HTMLTableElement>(*element) && (style.textAlign() == TextAlign::WebKitLeft || style.textAlign() == TextAlign::WebKitCenter || style.textAlign() == TextAlign::WebKitRight))
-                style.setTextAlign(TextAlign::Start);
+                style.setComputedTextAlign(TextAlign::Start);
 
             // Ruby text does not support float or position. This might change with evolution of the specification.
             if (element->hasTagName(rtTag)) {
-                style.setPosition(PositionType::Static);
-                style.setFloating(Float::None);
+                style.setComputedPosition(PositionType::Static);
+                style.setComputedFloating(Float::None);
             }
 
             if (element->hasTagName(legendTag))
@@ -570,7 +570,7 @@ void Adjuster::adjust(RenderStyle& style) const
         // Top layer elements are always position: absolute; unless the position is set to fixed.
         // https://fullscreen.spec.whatwg.org/#new-stacking-layer
         if (m_element != m_document->documentElement() && style.position() != PositionType::Absolute && style.position() != PositionType::Fixed && isInTopLayerOrBackdrop(style, m_element.get()))
-            style.setPosition(PositionType::Absolute);
+            style.setComputedPosition(PositionType::Absolute);
 
         // Absolute/fixed positioned elements, floating elements and the document element need block-like outside display.
         if (style.hasOutOfFlowPosition() || style.isFloating() || (m_element && m_document->documentElement() == m_element.get()))
@@ -590,12 +590,12 @@ void Adjuster::adjust(RenderStyle& style) const
         if ((style.display() == DisplayType::TableHeaderGroup || style.display() == DisplayType::TableRowGroup
             || style.display() == DisplayType::TableFooterGroup || style.display() == DisplayType::TableRow)
             && style.position() == PositionType::Relative)
-            style.setPosition(PositionType::Static);
+            style.setComputedPosition(PositionType::Static);
 
         // writing-mode does not apply to table row groups, table column groups, table rows, and table columns.
         if (style.display() == DisplayType::TableColumn || style.display() == DisplayType::TableColumnGroup || style.display() == DisplayType::TableFooterGroup
             || style.display() == DisplayType::TableHeaderGroup || style.display() == DisplayType::TableRow || style.display() == DisplayType::TableRowGroup)
-            style.setWritingMode(m_parentStyle.writingMode().computedWritingMode());
+            style.setComputedWritingMode(m_parentStyle.writingMode().computedWritingMode());
 
 
         // FIXME: Adjust this once CSSWG clarifies exactly how the initial value should compute on other display types.
@@ -616,16 +616,16 @@ void Adjuster::adjust(RenderStyle& style) const
             // FIXME: Since we don't support block-flow on flexible boxes yet, disallow setting
             // of block-flow to anything other than StyleWritingMode::HorizontalTb.
             // https://bugs.webkit.org/show_bug.cgi?id=46418 - Flexible box support.
-            style.setWritingMode(StyleWritingMode::HorizontalTb);
+            style.setComputedWritingMode(StyleWritingMode::HorizontalTb);
         }
 
         if (m_parentBoxStyle.isDisplayDeprecatedFlexibleBox())
-            style.setFloating(Float::None);
+            style.setComputedFloating(Float::None);
 
         // https://www.w3.org/TR/css-display/#transformations
         // "A parent with a grid or flex display value blockifies the box’s display type."
         if (m_parentBoxStyle.isDisplayFlexibleOrGridFormattingContextBox()) {
-            style.setFloating(Float::None);
+            style.setComputedFloating(Float::None);
             style.setEffectiveDisplay(equivalentBlockDisplay(style));
         }
 
@@ -634,7 +634,7 @@ void Adjuster::adjust(RenderStyle& style) const
             style.setEffectiveDisplay(equivalentInlineDisplay(style));
         // https://drafts.csswg.org/css-ruby-1/#bidi
         if (style.isRubyContainerOrInternalRubyBox())
-            style.setUnicodeBidi(forceBidiIsolationForRuby(style.unicodeBidi()));
+            style.setComputedUnicodeBidi(forceBidiIsolationForRuby(style.unicodeBidi()));
     }
 
     auto hasAutoZIndex = [](const RenderStyle& style, const RenderStyle& parentBoxStyle, const Element* element) {
@@ -694,29 +694,29 @@ void Adjuster::adjust(RenderStyle& style) const
     if (RefPtr element = m_element) {
         // Textarea considers overflow visible as auto.
         if (is<HTMLTextAreaElement>(*element)) {
-            style.setOverflowX(style.overflowX() == Overflow::Visible ? Overflow::Auto : style.overflowX());
-            style.setOverflowY(style.overflowY() == Overflow::Visible ? Overflow::Auto : style.overflowY());
+            style.setComputedOverflowX(style.overflowX() == Overflow::Visible ? Overflow::Auto : style.overflowX());
+            style.setComputedOverflowY(style.overflowY() == Overflow::Visible ? Overflow::Auto : style.overflowY());
         }
 
         if (RefPtr input = dynamicDowncast<HTMLInputElement>(*element); input && input->isPasswordField())
-            style.setTextSecurity(style.inputSecurity() == InputSecurity::Auto ? TextSecurity::Disc : TextSecurity::None);
+            style.setComputedTextSecurity(style.inputSecurity() == InputSecurity::Auto ? TextSecurity::Disc : TextSecurity::None);
 
         // Disallow -webkit-user-modify on ::pseudo elements, except if that pseudo-element targets a slot,
         // in which case we want the editability to be passed onto the slotted contents.
         if (element->isInUserAgentShadowTree() && !element->userAgentPart().isNull() && !is<HTMLSlotElement>(element))
-            style.setUserModify(UserModify::ReadOnly);
+            style.setComputedUserModify(UserModify::ReadOnly);
 
         if (is<HTMLMarqueeElement>(*element)) {
             bool isVertical = style.marqueeDirection() == MarqueeDirection::Up || style.marqueeDirection() == MarqueeDirection::Down;
             // Make horizontal marquees not wrap.
             if (!isVertical) {
-                style.setWhiteSpaceCollapse(WhiteSpaceCollapse::Collapse);
-                style.setTextWrapMode(TextWrapMode::NoWrap);
-                style.setTextAlign(TextAlign::Start);
+                style.setComputedWhiteSpaceCollapse(WhiteSpaceCollapse::Collapse);
+                style.setComputedTextWrapMode(TextWrapMode::NoWrap);
+                style.setComputedTextAlign(TextAlign::Start);
             }
             // Apparently this is the expected legacy behavior.
             if (isVertical && style.height().isAuto())
-                style.setHeight(200_css_px);
+                style.setComputedHeight(200_css_px);
         }
 
         if (m_element->visibilityAdjustment().contains(VisibilityAdjustment::Subtree)) [[unlikely]]
@@ -735,7 +735,7 @@ void Adjuster::adjust(RenderStyle& style) const
     if (shouldInheritTextDecorationsInEffect(style, m_element.get()))
         style.addToTextDecorationLineInEffect(style.textDecorationLine());
     else
-        style.setTextDecorationLineInEffect(Style::TextDecorationLine { style.textDecorationLine() });
+        style.setComputedTextDecorationLineInEffect(Style::TextDecorationLine { style.textDecorationLine() });
 
     bool overflowIsClipOrVisible = isOverflowClipOrVisible(style.overflowY()) && isOverflowClipOrVisible(style.overflowX());
 
@@ -746,15 +746,15 @@ void Adjuster::adjust(RenderStyle& style) const
         // Level 3 do not apply. Arguably overflow-x and overflow-y aren't allowed on tables but
         // all UAs allow it.
         if (style.overflowX() != Overflow::Hidden)
-            style.setOverflowX(Overflow::Visible);
+            style.setComputedOverflowX(Overflow::Visible);
         if (style.overflowY() != Overflow::Hidden)
-            style.setOverflowY(Overflow::Visible);
+            style.setComputedOverflowY(Overflow::Visible);
         // If we are left with conflicting overflow values for the x and y axes on a table then resolve
         // both to Overflow::Visible. This is interoperable behaviour but is not specced anywhere.
         if (style.overflowX() == Overflow::Visible)
-            style.setOverflowY(Overflow::Visible);
+            style.setComputedOverflowY(Overflow::Visible);
         else if (style.overflowY() == Overflow::Visible)
-            style.setOverflowX(Overflow::Visible);
+            style.setComputedOverflowX(Overflow::Visible);
     } else if (!isOverflowClipOrVisible(style.overflowY())) {
         // FIXME: Once we implement pagination controls, overflow-x should default to hidden
         // if overflow-y is set to -webkit-paged-x or -webkit-page-y. For now, we'll let it
@@ -762,16 +762,16 @@ void Adjuster::adjust(RenderStyle& style) const
         // Values of 'clip' and 'visible' can only be used with 'clip' and 'visible'.
         // If they aren't, 'clip' and 'visible' is reset.
         if (style.overflowX() == Overflow::Visible)
-            style.setOverflowX(Overflow::Auto);
+            style.setComputedOverflowX(Overflow::Auto);
         else if (style.overflowX() == Overflow::Clip)
-            style.setOverflowX(Overflow::Hidden);
+            style.setComputedOverflowX(Overflow::Hidden);
     } else if (!isOverflowClipOrVisible(style.overflowX())) {
         // Values of 'clip' and 'visible' can only be used with 'clip' and 'visible'.
         // If they aren't, 'clip' and 'visible' is reset.
         if (style.overflowY() == Overflow::Visible)
-            style.setOverflowY(Overflow::Auto);
+            style.setComputedOverflowY(Overflow::Auto);
         else if (style.overflowY() == Overflow::Clip)
-            style.setOverflowY(Overflow::Hidden);
+            style.setComputedOverflowY(Overflow::Hidden);
     }
 
     // Call setStylesForPaginationMode() if a pagination mode is set for any non-root elements. If these
@@ -835,7 +835,7 @@ void Adjuster::adjust(RenderStyle& style) const
     // If the inherited value of justify-items includes the 'legacy' keyword (plus 'left', 'right' or
     // 'center'), 'legacy' computes to the the inherited value. Otherwise, 'auto' computes to 'normal'.
     if (m_parentBoxStyle.justifyItems().resolve().positionType() == ItemPositionType::Legacy && style.justifyItems().resolve().position() == ItemPosition::Legacy)
-        style.setJustifyItems(m_parentBoxStyle.justifyItems());
+        style.setComputedJustifyItems(m_parentBoxStyle.justifyItems());
 
 #if HAVE(CORE_MATERIAL)
     if (appleVisualEffectNeedsBackdrop(style.appleVisualEffect()))
@@ -964,7 +964,7 @@ void Adjuster::adjustSVGElementStyle(RenderStyle& style, const SVGElement& svgEl
 {
     // Only the root <svg> element in an SVG document fragment tree honors css position
     if (!svgElement.isOutermostSVGSVGElement())
-        style.setPosition(Style::ComputedStyle::initialPosition());
+        style.setComputedPosition(Style::ComputedStyle::initialPosition());
 
     // SVG2: A new stacking context must be established at an SVG element for its descendants if:
     // - it is the root element
@@ -1037,15 +1037,15 @@ void Adjuster::adjustThemeStyle(RenderStyle& style, const RenderStyle& parentSty
     if (style.usedContain().contains(Style::ContainValue::Size)) {
         if (!style.containIntrinsicWidth().isNone()) {
             if (isOldWidthAuto)
-                style.setWidth(CSS::Keyword::Auto { });
+                style.setComputedWidth(CSS::Keyword::Auto { });
             if (isOldMinWidthAuto)
-                style.setMinWidth(CSS::Keyword::Auto { });
+                style.setComputedMinWidth(CSS::Keyword::Auto { });
         }
         if (!style.containIntrinsicHeight().isNone()) {
             if (isOldHeightAuto)
-                style.setHeight(CSS::Keyword::Auto { });
+                style.setComputedHeight(CSS::Keyword::Auto { });
             if (isOldMinHeightAuto)
-                style.setMinHeight(CSS::Keyword::Auto { });
+                style.setComputedMinHeight(CSS::Keyword::Auto { });
         }
     }
 }
@@ -1062,20 +1062,20 @@ void Adjuster::adjustForSiteSpecificQuirks(RenderStyle& style) const
 
     if (documentQuirks.needsBodyScrollbarWidthNoneDisabledQuirk() && is<HTMLBodyElement>(*m_element)) {
         if (style.scrollbarWidth() == ScrollbarWidth::None)
-            style.setScrollbarWidth(ScrollbarWidth::Auto);
+            style.setComputedScrollbarWidth(ScrollbarWidth::Auto);
     }
 
     if (documentQuirks.needsYouTubeOverflowScrollQuirk()) {
         // This turns sidebar scrollable without hover.
         static MainThreadNeverDestroyed<const AtomString> idValue("guide-inner-content"_s);
         if (style.overflowY() == Overflow::Hidden && m_element->idForStyleResolution() == idValue)
-            style.setOverflowY(Overflow::Auto);
+            style.setComputedOverflowY(Overflow::Auto);
     }
     if (documentQuirks.needsGMailOverflowScrollQuirk()) {
         // This turns sidebar scrollable without mouse move event.
         static MainThreadNeverDestroyed<const AtomString> roleValue("navigation"_s);
         if (style.overflowY() == Overflow::Hidden && m_element->attributeWithoutSynchronization(roleAttr) == roleValue)
-            style.setOverflowY(Overflow::Auto);
+            style.setComputedOverflowY(Overflow::Auto);
     }
 
     if (documentQuirks.needsGeforcenowWarningDisplayNoneQuirk()) {
@@ -1104,16 +1104,16 @@ void Adjuster::adjustForSiteSpecificQuirks(RenderStyle& style) const
     if (documentQuirks.needsPrimeVideoUserSelectNoneQuirk()) {
         static MainThreadNeverDestroyed<const AtomString> className("webPlayerSDKUiContainer"_s);
         if (m_element->hasClassName(className))
-            style.setUserSelect(UserSelect::None);
+            style.setComputedUserSelect(UserSelect::None);
     }
 
     if (auto tikTokOverflowingContentQuery = documentQuirks.needsTikTokOverflowingContentQuirk(*m_element, m_parentStyle)) {
         if (*tikTokOverflowingContentQuery == Quirks::TikTokOverflowingContentQuirkType::CommentsSectionQuirk)  {
-            style.setFlexShrink({ 1 });
-            style.setMinWidth(0_css_px);
+            style.setComputedFlexShrink({ 1 });
+            style.setComputedMinWidth(0_css_px);
         } else {
             ASSERT(tikTokOverflowingContentQuery == Quirks::TikTokOverflowingContentQuirkType::VideoSectionQuirk);
-            style.setFlexShrink({ 2 });
+            style.setComputedFlexShrink({ 2 });
         }
     }
 
@@ -1135,7 +1135,7 @@ void Adjuster::adjustForSiteSpecificQuirks(RenderStyle& style) const
         static MainThreadNeverDestroyed<const AtomString> playerClassName("top-player-video-element"_s);
         bool isFullscreen = documentFullscreen->isFullscreen();
         if (is<HTMLVideoElement>(*m_element) && isFullscreen && m_element->hasClassName(playerClassName) && style.objectFit() == ObjectFit::Fill)
-            style.setObjectFit(ObjectFit::Contain);
+            style.setComputedObjectFit(ObjectFit::Contain);
     }
 #endif
 #endif
@@ -1170,12 +1170,12 @@ void Adjuster::adjustForSiteSpecificQuirks(RenderStyle& style) const
         if (is<HTMLLabelElement>(*m_element)
             && m_element->hasClassName(class1)
             && style.backgroundColor() == Color { WebCore::Color::white })
-            style.setBackgroundColor({ WebCore::Color::transparentBlack });
+            style.setComputedBackgroundColor({ WebCore::Color::transparentBlack });
     }
 #endif
 
     if (documentQuirks.needsInstagramResizingReelsQuirk(*m_element, style, m_parentStyle))
-        style.setFlexGrow(1);
+        style.setComputedFlexGrow(1);
 }
 
 void Adjuster::propagateToDocumentElementAndInitialContainingBlock(Update& update, const Document& document)
@@ -1216,8 +1216,8 @@ void Adjuster::propagateToDocumentElementAndInitialContainingBlock(Update& updat
     WritingMode viewWritingMode = document.renderView()->writingMode();
     if (writingMode != viewWritingMode.computedWritingMode() || direction != viewWritingMode.computedTextDirection()) {
         auto newRootStyle = RenderStyle::clonePtr(document.renderView()->style());
-        newRootStyle->setWritingMode(writingMode);
-        newRootStyle->setDirection(direction);
+        newRootStyle->setComputedWritingMode(writingMode);
+        newRootStyle->setComputedDirection(direction);
         newRootStyle->setColumnStylesFromPaginationMode(document.view()->pagination().mode);
         update.addInitialContainingBlockUpdate(WTF::move(newRootStyle));
     }
@@ -1229,8 +1229,8 @@ void Adjuster::propagateToDocumentElementAndInitialContainingBlock(Update& updat
             update.addElement(*document.documentElement(), nullptr, { RenderStyle::clonePtr(*documentElementStyle) });
             documentElementUpdate = update.elementUpdate(*document.documentElement());
         }
-        documentElementUpdate->style->setWritingMode(writingMode);
-        documentElementUpdate->style->setDirection(direction);
+        documentElementUpdate->style->setComputedWritingMode(writingMode);
+        documentElementUpdate->style->setComputedDirection(direction);
         documentElementUpdate->changes.add(Change::Inherited);
     }
 }
@@ -1242,9 +1242,9 @@ std::unique_ptr<RenderStyle> Adjuster::restoreUsedDocumentElementStyleToComputed
 
     auto adjusted = RenderStyle::clonePtr(style);
     if (!style.hasExplicitlySetWritingMode())
-        adjusted->setWritingMode(Style::ComputedStyle::initialWritingMode());
+        adjusted->setComputedWritingMode(Style::ComputedStyle::initialWritingMode());
     if (!style.hasExplicitlySetDirection())
-        adjusted->setDirection(Style::ComputedStyle::initialDirection());
+        adjusted->setComputedDirection(Style::ComputedStyle::initialDirection());
 
     return adjusted;
 }
@@ -1328,7 +1328,7 @@ bool Adjuster::adjustForTextAutosizing(RenderStyle& style, AdjustmentForTextAuto
         style.setFontDescription(WTF::move(fontDescription));
     }
     if (auto newLineHeight = adjustment.newLineHeight)
-        style.setLineHeight(LineHeight::Fixed { *newLineHeight });
+        style.setComputedLineHeight(LineHeight::Fixed { *newLineHeight });
     if (auto newStatus = adjustment.newStatus)
         style.setAutosizeStatus(*newStatus);
     return adjustment.newFontSize || adjustment.newLineHeight;

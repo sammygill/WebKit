@@ -306,7 +306,7 @@ void RenderTheme::adjustStyle(RenderStyle& style, const RenderStyle& parentStyle
         return;
 
     if (!supportsBoxShadow(style))
-        style.setBoxShadow(CSS::Keyword::None { });
+        style.setComputedBoxShadow(CSS::Keyword::None { });
 
     switch (appearance) {
     case StyleAppearance::Checkbox:
@@ -1402,27 +1402,27 @@ void RenderTheme::adjustButtonOrCheckboxOrColorWellOrInnerSpinButtonOrRadioStyle
 
     if (Style::evaluate<float>(borderBox.top(), Style::ZoomNeeded { }) != Style::evaluate<int>(style.borderTopWidth(), Style::ZoomNeeded { })) {
         if (!borderBox.top().isZero())
-            style.setBorderTopWidth(borderBox.top());
+            style.setComputedBorderTopWidth(borderBox.top());
         else
             style.resetBorderTop();
     }
     if (Style::evaluate<float>(borderBox.right(), Style::ZoomNeeded { }) != Style::evaluate<int>(style.borderRightWidth(), Style::ZoomNeeded { })) {
         if (!borderBox.right().isZero())
-            style.setBorderRightWidth(borderBox.right());
+            style.setComputedBorderRightWidth(borderBox.right());
         else
             style.resetBorderRight();
     }
     if (Style::evaluate<float>(borderBox.bottom(), Style::ZoomNeeded { }) != Style::evaluate<int>(style.borderBottomWidth(), Style::ZoomNeeded { })) {
-        style.setBorderBottomWidth(borderBox.bottom());
+        style.setComputedBorderBottomWidth(borderBox.bottom());
         if (!borderBox.bottom().isZero())
-            style.setBorderBottomWidth(borderBox.bottom());
+            style.setComputedBorderBottomWidth(borderBox.bottom());
         else
             style.resetBorderBottom();
     }
     if (Style::evaluate<float>(borderBox.left(), Style::ZoomNeeded { }) != Style::evaluate<int>(style.borderLeftWidth(), Style::ZoomNeeded { })) {
-        style.setBorderLeftWidth(borderBox.left());
+        style.setComputedBorderLeftWidth(borderBox.left());
         if (!borderBox.left().isZero())
-            style.setBorderLeftWidth(borderBox.left());
+            style.setComputedBorderLeftWidth(borderBox.left());
         else
             style.resetBorderLeft();
     }
@@ -1434,8 +1434,8 @@ void RenderTheme::adjustButtonOrCheckboxOrColorWellOrInnerSpinButtonOrRadioStyle
 
     // Whitespace
     if (controlRequiresPreWhiteSpace(appearance)) {
-        style.setWhiteSpaceCollapse(WhiteSpaceCollapse::Preserve);
-        style.setTextWrapMode(TextWrapMode::NoWrap);
+        style.setComputedWhiteSpaceCollapse(WhiteSpaceCollapse::Preserve);
+        style.setComputedTextWrapMode(TextWrapMode::NoWrap);
     }
 
     // Width / Height
@@ -1444,9 +1444,9 @@ void RenderTheme::adjustButtonOrCheckboxOrColorWellOrInnerSpinButtonOrRadioStyle
     auto zoomForDeterminingControlSize = Style::ZoomFactor { usedZoomForComputedStyle(style), style.deviceScaleFactor() };
     auto controlSize = this->controlSize(appearance, fontCascade.get(), { style.width(), style.height() }, zoomForDeterminingControlSize.value);
     if (controlSize.width() != style.width())
-        style.setWidth(Style::PreferredSize { controlSize.width() });
+        style.setComputedWidth(Style::PreferredSize { controlSize.width() });
     if (controlSize.height() != style.height())
-        style.setHeight(Style::PreferredSize { controlSize.height() });
+        style.setComputedHeight(Style::PreferredSize { controlSize.height() });
 
     // Min-Width / Min-Height
     auto minimumControlSize = this->minimumControlSize(appearance, fontCascade.get(), { style.minWidth(), style.minHeight() }, { style.width(), style.height() }, zoomForDeterminingControlSize.value);
@@ -1457,54 +1457,54 @@ void RenderTheme::adjustButtonOrCheckboxOrColorWellOrInnerSpinButtonOrRadioStyle
     if (auto fixedOverrideMinWidth = minimumControlSize.width().tryFixed()) {
         if (auto fixedOriginalMinWidth = style.minWidth().tryFixed()) {
             if (fixedOverrideMinWidth->resolveZoom(usedZoomForLength) > fixedOriginalMinWidth->resolveZoom(usedZoomForLength))
-                style.setMinWidth(Style::MinimumSize(minimumControlSize.width()));
+                style.setComputedMinWidth(Style::MinimumSize(minimumControlSize.width()));
         } else if (auto percentageOriginalMinWidth = style.minWidth().tryPercentage()) {
             // FIXME: This really makes no sense but matches existing behavior. Should use a `calc(max(override, original))` here instead.
             if (fixedOverrideMinWidth->resolveZoom(usedZoomForLength) > percentageOriginalMinWidth->value)
-                style.setMinWidth(Style::MinimumSize(minimumControlSize.width()));
+                style.setComputedMinWidth(Style::MinimumSize(minimumControlSize.width()));
         } else if (fixedOverrideMinWidth->isPositive()) {
-            style.setMinWidth(Style::MinimumSize(minimumControlSize.width()));
+            style.setComputedMinWidth(Style::MinimumSize(minimumControlSize.width()));
         }
     } else if (auto percentageOverrideMinWidth = minimumControlSize.width().tryPercentage()) {
         if (auto fixedOriginalMinWidth = style.minWidth().tryFixed()) {
             // FIXME: This really makes no sense but matches existing behavior. Should use a `calc(max(override, original))` here instead.
             if (percentageOverrideMinWidth->value > fixedOriginalMinWidth->resolveZoom(usedZoomForLength))
-                style.setMinWidth(Style::MinimumSize(minimumControlSize.width()));
+                style.setComputedMinWidth(Style::MinimumSize(minimumControlSize.width()));
         } else if (auto percentageOriginalMinWidth = style.minWidth().tryPercentage()) {
             if (percentageOverrideMinWidth->value > percentageOriginalMinWidth->value)
-                style.setMinWidth(Style::MinimumSize(minimumControlSize.width()));
+                style.setComputedMinWidth(Style::MinimumSize(minimumControlSize.width()));
         } else if (percentageOverrideMinWidth->isPositive()) {
-            style.setMinWidth(Style::MinimumSize(minimumControlSize.width()));
+            style.setComputedMinWidth(Style::MinimumSize(minimumControlSize.width()));
         }
     }
     if (auto fixedOverrideMinHeight = minimumControlSize.height().tryFixed()) {
         if (auto fixedOriginalMinHeight = style.minHeight().tryFixed()) {
             if (fixedOverrideMinHeight->resolveZoom(usedZoomForLength) > fixedOriginalMinHeight->resolveZoom(usedZoomForLength))
-                style.setMinHeight(Style::MinimumSize(minimumControlSize.height()));
+                style.setComputedMinHeight(Style::MinimumSize(minimumControlSize.height()));
         } else if (auto percentageOriginalMinHeight = style.minHeight().tryPercentage()) {
             // FIXME: This really makes no sense but matches existing behavior. Should use a `calc(max(override, original))` here instead.
             if (fixedOverrideMinHeight->resolveZoom(usedZoomForLength) > percentageOriginalMinHeight->value)
-                style.setMinHeight(Style::MinimumSize(minimumControlSize.height()));
+                style.setComputedMinHeight(Style::MinimumSize(minimumControlSize.height()));
         } else if (fixedOverrideMinHeight->isPositive()) {
-            style.setMinHeight(Style::MinimumSize(minimumControlSize.height()));
+            style.setComputedMinHeight(Style::MinimumSize(minimumControlSize.height()));
         }
     } else if (auto percentageOverrideMinHeight = minimumControlSize.height().tryPercentage()) {
         if (auto fixedOriginalMinHeight = style.minHeight().tryFixed()) {
             // FIXME: This really makes no sense but matches existing behavior. Should use a `calc(max(override, original))` here instead.
             if (percentageOverrideMinHeight->value > fixedOriginalMinHeight->resolveZoom(usedZoomForLength))
-                style.setMinHeight(Style::MinimumSize(minimumControlSize.height()));
+                style.setComputedMinHeight(Style::MinimumSize(minimumControlSize.height()));
         } else if (auto percentageOriginalMinHeight = style.minHeight().tryPercentage()) {
             if (percentageOverrideMinHeight->value > percentageOriginalMinHeight->value)
-                style.setMinHeight(Style::MinimumSize(minimumControlSize.height()));
+                style.setComputedMinHeight(Style::MinimumSize(minimumControlSize.height()));
         } else if (percentageOverrideMinHeight->isPositive()) {
-            style.setMinHeight(Style::MinimumSize(minimumControlSize.height()));
+            style.setComputedMinHeight(Style::MinimumSize(minimumControlSize.height()));
         }
     }
 
     // Font
     if (auto controlFont = this->controlFont(appearance, fontCascade.get(), style.usedZoom())) {
         // If overriding the specified font with the theme font, also override the line height with the standard line height.
-        style.setLineHeight(Style::ComputedStyle::initialLineHeight());
+        style.setComputedLineHeight(Style::ComputedStyle::initialLineHeight());
         style.setFontDescription(WTF::move(controlFont.value()));
     }
 
@@ -1540,13 +1540,13 @@ void RenderTheme::adjustInnerSpinButtonStyle(RenderStyle& style, const Element* 
 
 void RenderTheme::adjustMenuListStyle(RenderStyle& style, const Element*) const
 {
-    style.setOverflowX(Overflow::Visible);
-    style.setOverflowY(Overflow::Visible);
+    style.setComputedOverflowX(Overflow::Visible);
+    style.setComputedOverflowY(Overflow::Visible);
 }
 
 void RenderTheme::adjustMeterStyle(RenderStyle& style, const Element*) const
 {
-    style.setBoxShadow(CSS::Keyword::None { });
+    style.setComputedBoxShadow(CSS::Keyword::None { });
 }
 
 FloatSize RenderTheme::meterSizeForBounds(const RenderMeter&, const FloatRect& bounds) const
@@ -1735,8 +1735,8 @@ void RenderTheme::adjustSwitchStyle(RenderStyle& style, const Element*) const
 
 void RenderTheme::adjustSwitchThumbOrSwitchTrackStyle(RenderStyle& style) const
 {
-    style.setGridItemRowStart(Style::GridPosition::Explicit { { 1 } });
-    style.setGridItemColumnStart(Style::GridPosition::Explicit { { 1 } });
+    style.setComputedGridItemRowStart(Style::GridPosition::Explicit { { 1 } });
+    style.setComputedGridItemColumnStart(Style::GridPosition::Explicit { { 1 } });
 }
 
 Style::PaddingBox RenderTheme::popupInternalPaddingBox(const RenderStyle&) const

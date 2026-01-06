@@ -58,13 +58,13 @@ RenderStyle resolveForDocument(const Document& document)
 
     auto documentStyle = RenderStyle::create();
 
-    documentStyle.setDisplay(DisplayType::Block);
-    documentStyle.setRTLOrdering(document.visuallyOrdered() ? WebCore::Order::Visual : WebCore::Order::Logical);
-    documentStyle.setZoom(!document.printing() ? renderView.frame().pageZoomFactor() : 1);
+    documentStyle.setComputedDisplay(DisplayType::Block);
+    documentStyle.setComputedRTLOrdering(document.visuallyOrdered() ? WebCore::Order::Visual : WebCore::Order::Logical);
+    documentStyle.setComputedZoom(!document.printing() ? renderView.frame().pageZoomFactor() : 1);
     documentStyle.setPageScaleTransform(renderView.frame().frameScaleFactor());
 
     // This overrides any -webkit-user-modify inherited from the parent iframe.
-    documentStyle.setUserModify(document.inDesignMode() ? UserModify::ReadWrite : UserModify::ReadOnly);
+    documentStyle.setComputedUserModify(document.inDesignMode() ? UserModify::ReadWrite : UserModify::ReadOnly);
 #if PLATFORM(IOS_FAMILY)
     if (document.inDesignMode())
         documentStyle.setTextSizeAdjust(CSS::Keyword::None { });
@@ -75,7 +75,7 @@ RenderStyle resolveForDocument(const Document& document)
     auto& pagination = renderView.frameView().pagination();
     if (pagination.mode != Pagination::Mode::Unpaginated) {
         documentStyle.setColumnStylesFromPaginationMode(pagination.mode);
-        documentStyle.setColumnGap(GapGutter::Fixed { static_cast<float>(pagination.gap) });
+        documentStyle.setComputedColumnGap(GapGutter::Fixed { static_cast<float>(pagination.gap) });
         if (renderView.multiColumnFlow())
             renderView.updateColumnProgressionFromStyle(documentStyle);
     }

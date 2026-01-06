@@ -986,8 +986,8 @@ void RenderReplaced::layoutShadowContent(const LayoutSize& oldSize)
         renderBox.setLocation(LayoutPoint(borderLeft(), borderTop()) + LayoutSize(paddingLeft(), paddingTop()));
 
         auto usedZoom = renderBox.style().usedZoomForLength();
-        renderBox.mutableStyle().setHeight(Style::PreferredSize::Fixed { newSize.height() / usedZoom.value });
-        renderBox.mutableStyle().setWidth(Style::PreferredSize::Fixed { newSize.width() / usedZoom.value });
+        renderBox.mutableStyle().setComputedHeight(Style::PreferredSize::Fixed { newSize.height() / usedZoom.value });
+        renderBox.mutableStyle().setComputedWidth(Style::PreferredSize::Fixed { newSize.width() / usedZoom.value });
 
         renderBox.setNeedsLayout(MarkOnlyThis);
         renderBox.layout();

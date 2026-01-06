@@ -111,7 +111,7 @@ RenderStyle RenderStyle::createAnonymousStyleWithDisplay(const RenderStyle& pare
     auto newStyle = create();
     newStyle.inheritFrom(parentStyle);
     newStyle.inheritUnicodeBidiFrom(parentStyle);
-    newStyle.setDisplay(display);
+    newStyle.setComputedDisplay(display);
     return newStyle;
 }
 

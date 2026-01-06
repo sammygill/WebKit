@@ -81,10 +81,10 @@ RenderStyle RenderListItem::computeMarkerStyle() const
     auto fontDescription = style().fontDescription();
     fontDescription.setVariantNumericSpacing(FontVariantNumericSpacing::TabularNumbers);
     markerStyle.setFontDescription(WTF::move(fontDescription));
-    markerStyle.setUnicodeBidi(UnicodeBidi::Isolate);
-    markerStyle.setWhiteSpaceCollapse(WhiteSpaceCollapse::Preserve);
-    markerStyle.setTextWrapMode(TextWrapMode::NoWrap);
-    markerStyle.setTextTransform({ });
+    markerStyle.setComputedUnicodeBidi(UnicodeBidi::Isolate);
+    markerStyle.setComputedWhiteSpaceCollapse(WhiteSpaceCollapse::Preserve);
+    markerStyle.setComputedTextWrapMode(TextWrapMode::NoWrap);
+    markerStyle.setComputedTextTransform({ });
     return markerStyle;
 }
 

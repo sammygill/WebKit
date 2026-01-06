@@ -327,10 +327,10 @@ static constexpr auto applePayButtonMinimumHeight = 30.0;
 void RenderThemeCocoa::adjustApplePayButtonStyle(RenderStyle& style, const Element*) const
 {
     if (style.applePayButtonType() == ApplePayButtonType::Plain)
-        style.setMinWidth(Style::MinimumSize::Fixed { applePayButtonPlainMinimumWidth });
+        style.setComputedMinWidth(Style::MinimumSize::Fixed { applePayButtonPlainMinimumWidth });
     else
-        style.setMinWidth(Style::MinimumSize::Fixed { applePayButtonMinimumWidth });
-    style.setMinHeight(Style::MinimumSize::Fixed { applePayButtonMinimumHeight });
+        style.setComputedMinWidth(Style::MinimumSize::Fixed { applePayButtonMinimumWidth });
+    style.setComputedMinHeight(Style::MinimumSize::Fixed { applePayButtonMinimumHeight });
 
     if (!style.hasExplicitlySetBorderRadius()) {
         auto radius = Style::LengthPercentage<CSS::Nonnegative>::Dimension { static_cast<float>(PKApplePayButtonDefaultCornerRadius) };
@@ -1728,13 +1728,13 @@ bool RenderThemeCocoa::adjustColorWellSwatchStyleForVectorBasedControls(RenderSt
 static void applyPaddingIfNotExplicitlySet(RenderStyle& style, Style::PaddingBox paddingBox)
 {
     if (!style.hasExplicitlySetPaddingLeft())
-        style.setPaddingLeft(WTF::move(paddingBox.left()));
+        style.setComputedPaddingLeft(WTF::move(paddingBox.left()));
     if (!style.hasExplicitlySetPaddingTop())
-        style.setPaddingTop(WTF::move(paddingBox.top()));
+        style.setComputedPaddingTop(WTF::move(paddingBox.top()));
     if (!style.hasExplicitlySetPaddingRight())
-        style.setPaddingRight(WTF::move(paddingBox.right()));
+        style.setComputedPaddingRight(WTF::move(paddingBox.right()));
     if (!style.hasExplicitlySetPaddingBottom())
-        style.setPaddingBottom(WTF::move(paddingBox.bottom()));
+        style.setComputedPaddingBottom(WTF::move(paddingBox.bottom()));
 }
 
 bool RenderThemeCocoa::adjustColorWellSwatchWrapperStyleForVectorBasedControls(RenderStyle& style, const Element* element) const
@@ -1763,7 +1763,7 @@ bool RenderThemeCocoa::adjustColorWellSwatchOverlayStyleForVectorBasedControls(R
     if (!formControlRefreshEnabled(element))
         return false;
 
-    style.setDisplay(DisplayType::None);
+    style.setComputedDisplay(DisplayType::None);
 
     return true;
 #endif
@@ -1836,7 +1836,7 @@ bool RenderThemeCocoa::adjustInnerSpinButtonStyleForVectorBasedControls(RenderSt
 
     style.setLogicalWidth(Style::PreferredSize::Fixed { pixelsPerEm });
     style.setLogicalHeight(CSS::Keyword::Auto { });
-    style.setAlignSelf(CSS::Keyword::Stretch { });
+    style.setComputedAlignSelf(CSS::Keyword::Stretch { });
 
     return true;
 #endif
@@ -2594,7 +2594,7 @@ static void adjustSelectListButtonStyleForVectorBasedControls(RenderStyle& style
 #else
     UNUSED_PARAM(element);
 #endif
-    style.setLineHeight(CSS::Keyword::Normal { });
+    style.setComputedLineHeight(CSS::Keyword::Normal { });
 }
 
 bool RenderThemeCocoa::adjustMenuListStyleForVectorBasedControls(RenderStyle& style, const Element* element) const
@@ -2606,16 +2606,16 @@ bool RenderThemeCocoa::adjustMenuListStyleForVectorBasedControls(RenderStyle& st
 
     if (!style.hasExplicitlySetColor()) {
         const auto styleColorOptions = element->document().styleColorOptions(&style);
-        style.setColor(buttonTextColor(styleColorOptions, !element->isDisabledFormControl()));
+        style.setComputedColor(buttonTextColor(styleColorOptions, !element->isDisabledFormControl()));
     }
 
-    style.setWhiteSpaceCollapse(WhiteSpaceCollapse::Preserve);
-    style.setTextWrapMode(TextWrapMode::NoWrap);
-    style.setBoxShadow(CSS::Keyword::None  { });
+    style.setComputedWhiteSpaceCollapse(WhiteSpaceCollapse::Preserve);
+    style.setComputedTextWrapMode(TextWrapMode::NoWrap);
+    style.setComputedBoxShadow(CSS::Keyword::None  { });
 
     // Enforce "line-height: normal" as long as this element isn't a non-select element using `-webkit-appearance: menulist`.
     if (element && is<HTMLSelectElement>(*element))
-        style.setLineHeight(CSS::Keyword::Normal { });
+        style.setComputedLineHeight(CSS::Keyword::Normal { });
 
     return true;
 }
@@ -2693,7 +2693,7 @@ bool RenderThemeCocoa::adjustButtonStyleForVectorBasedControls(RenderStyle& styl
     auto adjustStyleForSubmitButton = [&] {
         style.setInsideSubmitButton(true);
 #if PLATFORM(MAC)
-        style.setColor(buttonTextColor(styleColorOptions, isEnabled));
+        style.setComputedColor(buttonTextColor(styleColorOptions, isEnabled));
 #endif
     };
 
@@ -2701,7 +2701,7 @@ bool RenderThemeCocoa::adjustButtonStyleForVectorBasedControls(RenderStyle& styl
         if (isSubmitStyleButton(element))
             adjustStyleForSubmitButton();
         else
-            style.setColor(buttonTextColor(styleColorOptions, isEnabled));
+            style.setComputedColor(buttonTextColor(styleColorOptions, isEnabled));
     }
 
 #if PLATFORM(IOS_FAMILY)
@@ -2743,7 +2743,7 @@ bool RenderThemeCocoa::adjustMenuListButtonStyleForVectorBasedControls(RenderSty
 
     if (!style.hasExplicitlySetColor()) {
         const auto styleColorOptions = element->document().styleColorOptions(&style);
-        style.setColor(buttonTextColor(styleColorOptions, !element->isDisabledFormControl()));
+        style.setComputedColor(buttonTextColor(styleColorOptions, !element->isDisabledFormControl()));
     }
 
     const auto isNonMultipleSelectElement = is<HTMLSelectElement>(*element) && !element->hasAttributeWithoutSynchronization(HTMLNames::multipleAttr);
@@ -3499,8 +3499,8 @@ bool RenderThemeCocoa::adjustSliderThumbSizeForVectorBasedControls(RenderStyle& 
 
     // Enforce a 24x16 size (16x24 in vertical mode) if no size is provided.
     if (style.width().isIntrinsicOrLegacyIntrinsicOrAuto() || style.height().isAuto()) {
-        style.setWidth(Style::PreferredSize::Fixed { sliderThumbWidthForLayout * usedZoom });
-        style.setHeight(Style::PreferredSize::Fixed { sliderThumbHeightForLayout * usedZoom });
+        style.setComputedWidth(Style::PreferredSize::Fixed { sliderThumbWidthForLayout * usedZoom });
+        style.setComputedHeight(Style::PreferredSize::Fixed { sliderThumbHeightForLayout * usedZoom });
     }
 
     return true;
@@ -3512,7 +3512,7 @@ bool RenderThemeCocoa::adjustSliderThumbStyleForVectorBasedControls(RenderStyle&
         return false;
 
     RenderTheme::adjustSliderThumbStyle(style, element);
-    style.setBoxShadow(CSS::Keyword::None { });
+    style.setComputedBoxShadow(CSS::Keyword::None { });
 
     return true;
 }
@@ -3649,8 +3649,8 @@ bool RenderThemeCocoa::adjustSearchFieldCancelButtonStyleForVectorBasedControls(
     Ref emSize = CSSPrimitiveValue::create(1, CSSUnitType::CSS_EM);
     auto pixelsPerEm = emSize->resolveAsLength<float>(conversionDataForStyle(style));
 
-    style.setWidth(Style::PreferredSize::Fixed { searchFieldDecorationEmSize * pixelsPerEm });
-    style.setHeight(Style::PreferredSize::Fixed { searchFieldDecorationEmSize * pixelsPerEm });
+    style.setComputedWidth(Style::PreferredSize::Fixed { searchFieldDecorationEmSize * pixelsPerEm });
+    style.setComputedHeight(Style::PreferredSize::Fixed { searchFieldDecorationEmSize * pixelsPerEm });
     return true;
 #else
     UNUSED_PARAM(style);
@@ -3756,8 +3756,8 @@ bool RenderThemeCocoa::adjustSearchFieldDecorationPartStyleForVectorBasedControl
 #endif
     auto searchFieldDecorationHeight = searchFieldDecorationEmSize;
 
-    style.setWidth(Style::PreferredSize::Fixed { static_cast<float>(searchFieldDecorationWidth * pixelsPerEm) });
-    style.setHeight(Style::PreferredSize::Fixed { static_cast<float>(searchFieldDecorationHeight * pixelsPerEm) });
+    style.setComputedWidth(Style::PreferredSize::Fixed { static_cast<float>(searchFieldDecorationWidth * pixelsPerEm) });
+    style.setComputedHeight(Style::PreferredSize::Fixed { static_cast<float>(searchFieldDecorationHeight * pixelsPerEm) });
     style.setMarginEnd(Style::MarginEdge::Fixed { static_cast<float>(searchFieldDecorationEmMargin * pixelsPerEm) });
     return true;
 }

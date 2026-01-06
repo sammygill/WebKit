@@ -202,9 +202,9 @@ std::unique_ptr<Box> TreeBuilder::createLayoutBox(const ElementBox& parentContai
         auto clonedStyle = RenderStyle::clone(renderer.style());
 
         if (is<RenderLineBreak>(renderer)) {
-            clonedStyle.setDisplay(DisplayType::Inline);
-            clonedStyle.setFloating(Float::None);
-            clonedStyle.setPosition(PositionType::Static);
+            clonedStyle.setComputedDisplay(DisplayType::Inline);
+            clonedStyle.setComputedFloating(Float::None);
+            clonedStyle.setComputedPosition(PositionType::Static);
             childLayoutBox = createContainer(elementAttributes(renderer), WTF::move(clonedStyle));
         } else if (is<RenderTable>(renderer)) {
             // Construct the principal table wrapper box (and not the table box itself).
@@ -212,8 +212,8 @@ std::unique_ptr<Box> TreeBuilder::createLayoutBox(const ElementBox& parentContai
             // are used on the table wrapper box and not the table box; all other values of non-inheritable properties are used
             // on the table box and not the table wrapper box.
             auto tableWrapperBoxStyle = RenderStyle::createAnonymousStyleWithDisplay(parentContainer.style(), renderer.style().display() == DisplayType::Table ? DisplayType::Block : DisplayType::Inline);
-            tableWrapperBoxStyle.setPosition(renderer.style().position());
-            tableWrapperBoxStyle.setFloating(renderer.style().floating());
+            tableWrapperBoxStyle.setComputedPosition(renderer.style().position());
+            tableWrapperBoxStyle.setComputedFloating(renderer.style().floating());
 
             tableWrapperBoxStyle.setInsetBox(Style::InsetBox { renderer.style().insetBox() });
             tableWrapperBoxStyle.setMarginBox(Style::MarginBox { renderer.style().marginBox() });
@@ -233,8 +233,8 @@ std::unique_ptr<Box> TreeBuilder::createLayoutBox(const ElementBox& parentContai
         } else {
             if (displayType == DisplayType::Block) {
                 if (auto offset = accumulatedOffsetForInFlowPositionedContinuation(downcast<RenderBox>(renderer))) {
-                    clonedStyle.setTop(Style::InsetEdge::Fixed { offset->height() });
-                    clonedStyle.setLeft(Style::InsetEdge::Fixed { offset->width() });
+                    clonedStyle.setComputedTop(Style::InsetEdge::Fixed { offset->height() });
+                    clonedStyle.setComputedLeft(Style::InsetEdge::Fixed { offset->width() });
                     childLayoutBox = createContainer(elementAttributes(renderer), WTF::move(clonedStyle));
                 } else
                     childLayoutBox = createContainer(elementAttributes(renderer), WTF::move(clonedStyle));
@@ -260,7 +260,7 @@ std::unique_ptr<Box> TreeBuilder::createLayoutBox(const ElementBox& parentContai
             } else {
                 ASSERT_NOT_IMPLEMENTED_YET();
                 // Let's fall back to a regular block level container when the renderer type is not yet supported.
-                clonedStyle.setDisplay(DisplayType::Block);
+                clonedStyle.setComputedDisplay(DisplayType::Block);
                 childLayoutBox = createContainer(elementAttributes(renderer), WTF::move(clonedStyle));
             }
         }
@@ -294,12 +294,12 @@ void TreeBuilder::buildTableStructure(const RenderTable& tableRenderer, ElementB
     }
 
     auto tableBoxStyle = RenderStyle::clone(tableRenderer.style());
-    tableBoxStyle.setPosition(PositionType::Static);
-    tableBoxStyle.setFloating(Float::None);
+    tableBoxStyle.setComputedPosition(PositionType::Static);
+    tableBoxStyle.setComputedFloating(Float::None);
     tableBoxStyle.resetMargin();
     // FIXME: Figure out where the spec says table width is like box-sizing: border-box;
     if (is<HTMLTableElement>(tableRenderer.element()))
-        tableBoxStyle.setBoxSizing(BoxSizing::BorderBox);
+        tableBoxStyle.setComputedBoxSizing(BoxSizing::BorderBox);
     auto isAnonymous = tableRenderer.isAnonymous() ? Box::IsAnonymous::Yes : Box::IsAnonymous::No;
     auto newTableBox = createContainer(Box::ElementAttributes { Box::NodeType::TableBox, isAnonymous }, WTF::move(tableBoxStyle));
     auto& tableBox = appendChild(tableWrapperBox, WTF::move(newTableBox));

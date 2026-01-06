@@ -179,14 +179,14 @@ void BoxTreeUpdater::adjustStyleIfNeeded(const RenderElement& renderer, RenderSt
     auto adjustStyle = [&] (auto& styleToAdjust) {
         if (is<RenderBlock>(renderer)) {
             if (styleToAdjust.display() == DisplayType::Inline)
-                styleToAdjust.setDisplay(DisplayType::InlineBlock);
+                styleToAdjust.setComputedDisplay(DisplayType::InlineBlock);
             if (renderer.isAnonymousBlock()) {
                 auto& anonBlockParentStyle = renderer.parent()->style();
                 // overflow and text-overflow property values don't get forwarded to anonymous block boxes.
                 // e.g. <div style="overflow: hidden; text-overflow: ellipsis; width: 100px; white-space: pre;">this text should have ellipsis<div></div></div>
-                styleToAdjust.setTextOverflow(anonBlockParentStyle.textOverflow());
-                styleToAdjust.setOverflowX(anonBlockParentStyle.overflowX());
-                styleToAdjust.setOverflowY(anonBlockParentStyle.overflowY());
+                styleToAdjust.setComputedTextOverflow(anonBlockParentStyle.textOverflow());
+                styleToAdjust.setComputedOverflowX(anonBlockParentStyle.overflowX());
+                styleToAdjust.setComputedOverflowY(anonBlockParentStyle.overflowY());
             }
             if (renderer.isRenderTextControl()
 #if ENABLE(MATHML)
@@ -195,7 +195,7 @@ void BoxTreeUpdater::adjustStyleIfNeeded(const RenderElement& renderer, RenderSt
             ) {
                 // Something like <input style="appearance:none; display:table-header-group"> confuses IFC.
                 if (styleToAdjust.isInternalTableBox() || styleToAdjust.display() == DisplayType::TableCaption)
-                    styleToAdjust.setDisplay(DisplayType::Block);
+                    styleToAdjust.setComputedDisplay(DisplayType::Block);
             }
             return;
         }
@@ -207,13 +207,13 @@ void BoxTreeUpdater::adjustStyleIfNeeded(const RenderElement& renderer, RenderSt
                 // This uses `Style::ComputedStyle::initialMarginLeft()` because there is no defined initial value for margin start. However, since all margin edges have the same initial value, this is fine.
                 styleToAdjust.setMarginStart(Style::ComputedStyle::initialMarginLeft());
                 styleToAdjust.resetBorderLeft();
-                styleToAdjust.setPaddingLeft(Style::ComputedStyle::initialPaddingLeft());
+                styleToAdjust.setComputedPaddingLeft(Style::ComputedStyle::initialPaddingLeft());
             }
             if (shouldNotRetainBorderPaddingAndMarginEnd) {
                 // This uses `Style::ComputedStyle::initialMarginRight()` because there is no defined initial value for margin end. However, since all margin edges have the same initial value, this is fine.
                 styleToAdjust.setMarginEnd(Style::ComputedStyle::initialMarginRight());
                 styleToAdjust.resetBorderRight();
-                styleToAdjust.setPaddingRight(Style::ComputedStyle::initialPaddingRight());
+                styleToAdjust.setComputedPaddingRight(Style::ComputedStyle::initialPaddingRight());
             }
 
             auto isSupportedInlineDisplay = [&] {
@@ -225,20 +225,20 @@ void BoxTreeUpdater::adjustStyleIfNeeded(const RenderElement& renderer, RenderSt
                 return styleToAdjust.isDisplayInlineType();
             };
             if (!isSupportedInlineDisplay())
-                styleToAdjust.setDisplay(DisplayType::Inline);
+                styleToAdjust.setComputedDisplay(DisplayType::Inline);
             return;
         }
         if (auto* renderLineBreak = dynamicDowncast<RenderLineBreak>(renderer)) {
             if (!styleToAdjust.hasOutOfFlowPosition()) {
                 // Force in-flow display value to inline (see webkit.org/b/223151).
-                styleToAdjust.setDisplay(DisplayType::Inline);
+                styleToAdjust.setComputedDisplay(DisplayType::Inline);
             }
-            styleToAdjust.setFloating(Float::None);
+            styleToAdjust.setComputedFloating(Float::None);
             // Clear property should only apply on block elements, however,
             // it appears that browsers seem to ignore it on <br> inline elements.
             // https://drafts.csswg.org/css2/#propdef-clear
             if (renderLineBreak->isWBR())
-                styleToAdjust.setClear(Clear::None);
+                styleToAdjust.setComputedClear(Clear::None);
             return;
         }
     };

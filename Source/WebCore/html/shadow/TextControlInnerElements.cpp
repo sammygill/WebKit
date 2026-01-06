@@ -104,9 +104,9 @@ std::optional<Style::UnadjustedStyle> TextControlInnerContainer::resolveCustomSt
     auto elementStyle = resolveStyle(resolutionContext);
     CheckedRef elementStyleStyle = *elementStyle.style;
     if (isStrongPasswordTextField(shadowHost.get())) {
-        elementStyleStyle->setFlexWrap(FlexWrap::Wrap);
-        elementStyleStyle->setOverflowX(Overflow::Hidden);
-        elementStyleStyle->setOverflowY(Overflow::Hidden);
+        elementStyleStyle->setComputedFlexWrap(FlexWrap::Wrap);
+        elementStyleStyle->setComputedOverflowX(Overflow::Hidden);
+        elementStyleStyle->setComputedOverflowY(Overflow::Hidden);
     }
 
     if (shadowHostStyle)
@@ -129,28 +129,28 @@ std::optional<Style::UnadjustedStyle> TextControlInnerElement::resolveCustomStyl
 {
     auto newStyle = RenderStyle::createPtr();
     newStyle->inheritFrom(*shadowHostStyle);
-    newStyle->setFlexGrow(1);
+    newStyle->setComputedFlexGrow(1);
 
     // Needed for correct shrinking.
     newStyle->setLogicalMinWidth(0_css_px);
 
-    newStyle->setDisplay(DisplayType::Block);
-    newStyle->setDirection(TextDirection::LTR);
+    newStyle->setComputedDisplay(DisplayType::Block);
+    newStyle->setComputedDirection(TextDirection::LTR);
     // We don't want the shadow DOM to be editable, so we set this block to read-only in case the input itself is editable.
-    newStyle->setUserModify(UserModify::ReadOnly);
+    newStyle->setComputedUserModify(UserModify::ReadOnly);
 
     if (isStrongPasswordTextField(shadowHost())) {
-        newStyle->setFlexShrink(0);
-        newStyle->setTextOverflow(TextOverflow::Clip);
-        newStyle->setOverflowX(Overflow::Hidden);
-        newStyle->setOverflowY(Overflow::Hidden);
+        newStyle->setComputedFlexShrink(0);
+        newStyle->setComputedTextOverflow(TextOverflow::Clip);
+        newStyle->setComputedOverflowX(Overflow::Hidden);
+        newStyle->setComputedOverflowY(Overflow::Hidden);
 
         // Set "flex-basis: 1em". Note that CSSPrimitiveValue::resolveAsLength<int>() only needs the element's
         // style to calculate em lengths. Since the element might not be in a document, just pass nullptr
         // for the root element style, the parent element style, and the render view.
         auto emSize = CSSPrimitiveValue::create(1, CSSUnitType::CSS_EM);
         int pixels = emSize->resolveAsLength<int>(CSSToLengthConversionData { *newStyle, nullptr, nullptr, nullptr });
-        newStyle->setFlexBasis(Style::FlexBasis::Fixed { static_cast<float>(pixels) });
+        newStyle->setComputedFlexBasis(Style::FlexBasis::Fixed { static_cast<float>(pixels) });
     }
 
     return Style::UnadjustedStyle { WTF::move(newStyle) };
@@ -242,12 +242,12 @@ std::optional<Style::UnadjustedStyle> TextControlPlaceholderElement::resolveCust
 
     Ref controlElement = downcast<HTMLTextFormControlElement>(*containingShadowRoot()->host());
     CheckedRef styleStyle = *style.style;
-    styleStyle->setDisplay(controlElement->isPlaceholderVisible() ? DisplayType::Block : DisplayType::None);
+    styleStyle->setComputedDisplay(controlElement->isPlaceholderVisible() ? DisplayType::Block : DisplayType::None);
 
     if (RefPtr inputElement = dynamicDowncast<HTMLInputElement>(controlElement)) {
-        styleStyle->setTextOverflow(inputElement->shouldTruncateText(*shadowHostStyle) ? TextOverflow::Ellipsis : TextOverflow::Clip);
-        styleStyle->setPaddingTop(0_css_px);
-        styleStyle->setPaddingBottom(0_css_px);
+        styleStyle->setComputedTextOverflow(inputElement->shouldTruncateText(*shadowHostStyle) ? TextOverflow::Ellipsis : TextOverflow::Clip);
+        styleStyle->setComputedPaddingTop(0_css_px);
+        styleStyle->setComputedPaddingBottom(0_css_px);
     }
 
     if (shadowHostStyle)
@@ -287,7 +287,7 @@ std::optional<Style::UnadjustedStyle> SearchFieldResultsButtonElement::resolveCu
 
     if (searchFieldStyleHasExplicitlySpecifiedTextFieldAppearance(*shadowHostStyle)) {
         auto elementStyle = resolveStyle(resolutionContext);
-        elementStyle.style->setDisplay(DisplayType::None);
+        elementStyle.style->setComputedDisplay(DisplayType::None);
         return elementStyle;
     }
 
@@ -359,10 +359,10 @@ std::optional<Style::UnadjustedStyle> SearchFieldCancelButtonElement::resolveCus
 {
     auto elementStyle = resolveStyle(resolutionContext);
     Ref inputElement = downcast<HTMLInputElement>(*shadowHost());
-    elementStyle.style->setVisibility(elementStyle.style->usedVisibility() == Visibility::Hidden || inputElement->value()->isEmpty() ? Visibility::Hidden : Visibility::Visible);
+    elementStyle.style->setComputedVisibility(elementStyle.style->usedVisibility() == Visibility::Hidden || inputElement->value()->isEmpty() ? Visibility::Hidden : Visibility::Visible);
 
     if (shadowHostStyle && searchFieldStyleHasExplicitlySpecifiedTextFieldAppearance(*shadowHostStyle))
-        elementStyle.style->setDisplay(DisplayType::None);
+        elementStyle.style->setComputedDisplay(DisplayType::None);
 
     return elementStyle;
 }

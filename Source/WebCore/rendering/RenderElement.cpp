@@ -885,13 +885,13 @@ void RenderElement::propagateStyleToAnonymousChildren(StylePropagationType propa
             if (elementChild->style().specifiesColumns())
                 newStyle.inheritColumnPropertiesFrom(style());
             if (elementChild->style().columnSpan() == ColumnSpan::All)
-                newStyle.setColumnSpan(ColumnSpan::All);
+                newStyle.setComputedColumnSpan(ColumnSpan::All);
         }
 
         // Preserve the position style of anonymous block continuations as they can have relative or sticky position when
         // they contain block descendants of relative or sticky positioned inlines.
         if (elementChild->isInFlowPositioned() && elementChild->isContinuation())
-            newStyle.setPosition(elementChild->style().position());
+            newStyle.setComputedPosition(elementChild->style().position());
 
         updateAnonymousChildStyle(newStyle);
         

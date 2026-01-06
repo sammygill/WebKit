@@ -34,10 +34,10 @@
 namespace WebCore {
 namespace Style {
 
-inline void BuilderState::setTextOrientation(TextOrientation orientation) { m_fontDirty |= m_style.setTextOrientation(orientation); }
-inline void BuilderState::setWritingMode(StyleWritingMode mode) { m_fontDirty |= m_style.setWritingMode(mode); }
+inline void BuilderState::setTextOrientation(TextOrientation orientation) { m_fontDirty |= m_style.setComputedTextOrientation(orientation); }
+inline void BuilderState::setWritingMode(StyleWritingMode mode) { m_fontDirty |= m_style.setComputedWritingMode(mode); }
 
-inline void BuilderState::setZoom(Zoom zoom) { m_fontDirty |= m_style.setZoom(zoom); }
+inline void BuilderState::setZoom(Zoom zoom) { m_fontDirty |= m_style.setComputedZoom(zoom); }
 inline void BuilderState::setUsedZoom(float zoom) { m_fontDirty |= m_style.setUsedZoom(zoom); }
 
 inline const FontCascadeDescription& BuilderState::parentFontDescription() { return parentStyle().fontDescription(); }

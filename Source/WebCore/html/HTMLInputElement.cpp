@@ -2338,20 +2338,20 @@ RenderStyle HTMLInputElement::createInnerTextStyle(const RenderStyle& style)
     textBlockStyle.inheritFrom(style);
     adjustInnerTextStyle(style, textBlockStyle);
 
-    textBlockStyle.setWhiteSpaceCollapse(WhiteSpaceCollapse::Preserve);
-    textBlockStyle.setTextWrapMode(TextWrapMode::NoWrap);
-    textBlockStyle.setOverflowWrap(OverflowWrap::Normal);
-    textBlockStyle.setOverflowX(Overflow::Hidden);
-    textBlockStyle.setOverflowY(Overflow::Hidden);
-    textBlockStyle.setTextOverflow(shouldTruncateText(style) ? TextOverflow::Ellipsis : TextOverflow::Clip);
+    textBlockStyle.setComputedWhiteSpaceCollapse(WhiteSpaceCollapse::Preserve);
+    textBlockStyle.setComputedTextWrapMode(TextWrapMode::NoWrap);
+    textBlockStyle.setComputedOverflowWrap(OverflowWrap::Normal);
+    textBlockStyle.setComputedOverflowX(Overflow::Hidden);
+    textBlockStyle.setComputedOverflowY(Overflow::Hidden);
+    textBlockStyle.setComputedTextOverflow(shouldTruncateText(style) ? TextOverflow::Ellipsis : TextOverflow::Clip);
 
-    textBlockStyle.setDisplay(DisplayType::Block);
+    textBlockStyle.setComputedDisplay(DisplayType::Block);
 
     if (hasAutofillStrongPasswordButton() && isMutable()) {
-        textBlockStyle.setDisplay(DisplayType::InlineBlock);
+        textBlockStyle.setComputedDisplay(DisplayType::InlineBlock);
         textBlockStyle.setLogicalMaxWidth(100_css_percentage);
-        textBlockStyle.setColor(Color::black.colorWithAlphaByte(153));
-        textBlockStyle.setTextOverflow(TextOverflow::Clip);
+        textBlockStyle.setComputedColor(Color::black.colorWithAlphaByte(153));
+        textBlockStyle.setComputedTextOverflow(TextOverflow::Clip);
         textBlockStyle.setMaskLayers(Style::MaskLayer { autoFillStrongPasswordMaskImage() });
         // A stacking context is needed for the mask.
         if (textBlockStyle.usedZIndex().isAuto())
@@ -2365,7 +2365,7 @@ RenderStyle HTMLInputElement::createInnerTextStyle(const RenderStyle& style)
         return isText() && !style.logicalHeight().isAuto() && !hasAutofillStrongPasswordButton();
     };
     if (shouldUseInitialLineHeight())
-        textBlockStyle.setLineHeight(Style::ComputedStyle::initialLineHeight());
+        textBlockStyle.setComputedLineHeight(Style::ComputedStyle::initialLineHeight());
 
     return textBlockStyle;
 }

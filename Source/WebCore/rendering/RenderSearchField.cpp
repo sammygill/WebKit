@@ -208,7 +208,7 @@ void RenderSearchField::updateCancelButtonVisibility() const
         return;
 
     auto cancelButtonStyle = RenderStyle::clone(curStyle);
-    cancelButtonStyle.setVisibility(buttonVisibility);
+    cancelButtonStyle.setComputedVisibility(buttonVisibility);
     cancelButtonRenderer->setStyle(WTF::move(cancelButtonStyle));
 }
 

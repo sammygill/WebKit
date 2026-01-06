@@ -7293,7 +7293,7 @@ class GenerateRenderStyleProperties:
 
                 self.generation_context.generate_function_declaration(
                     to=to,
-                    function_name=setter_name,
+                    function_name=setter_name.replace("set", "setComputed", 1),
                     function_specifiers=setter_function_specifiers,
                     return_type=setter_return_type,
                     argument_types=[setter_argument_type]
@@ -7679,14 +7679,14 @@ class GenerateRenderStyleProperties:
 
     # Generate RenderStyleProperties+SettersInlines.h
 
-    def _generate_setters_inlines_function_definition(self, *, to, function_name, function_specifiers, return_type, argument_type, argument_name, forwarding_expression):
+    def _generate_setters_inlines_function_definition(self, *, to, function_name, computed_style_function_name, function_specifiers, return_type, argument_type, argument_name, forwarding_expression):
         to.write(f"{''.join(map(lambda x: x + ' ', function_specifiers))}{return_type} RenderStyleProperties::{function_name}({argument_type} {argument_name})")
         to.write(f"{{")
         with to.indent():
             if return_type == 'void':
-                to.write(f"m_computedStyle.{function_name}({forwarding_expression});")
+                to.write(f"m_computedStyle.{computed_style_function_name}({forwarding_expression});")
             else:
-                to.write(f"return m_computedStyle.{function_name}({forwarding_expression});")
+                to.write(f"return m_computedStyle.{computed_style_function_name}({forwarding_expression});")
         to.write(f"}}")
         to.newline()
 
@@ -7717,7 +7717,8 @@ class GenerateRenderStyleProperties:
 
             self._generate_setters_inlines_function_definition(
                 to=to,
-                function_name=function_name,
+                function_name=function_name.replace("set", "setComputed", 1),
+                computed_style_function_name=function_name,
                 function_specifiers=function_specifiers,
                 return_type=return_type,
                 argument_type=argument_type,
@@ -7736,6 +7737,7 @@ class GenerateRenderStyleProperties:
                 self._generate_setters_inlines_function_definition(
                     to=to,
                     function_name=function_name,
+                    computed_style_function_name=function_name,
                     function_specifiers=function_specifiers,
                     return_type=return_type,
                     argument_type=argument_type,
@@ -7754,6 +7756,7 @@ class GenerateRenderStyleProperties:
                 self._generate_setters_inlines_function_definition(
                     to=to,
                     function_name=function_name,
+                    computed_style_function_name=function_name,
                     function_specifiers=function_specifiers,
                     return_type=return_type,
                     argument_type=argument_type,
@@ -7777,6 +7780,7 @@ class GenerateRenderStyleProperties:
                     self._generate_setters_inlines_function_definition(
                         to=to,
                         function_name=f"setLogical{property.id_without_prefix}",
+                        computed_style_function_name=f"setLogical{property.id_without_prefix}",
                         function_specifiers=function_specifiers,
                         return_type="void",
                         argument_type=argument_type,
@@ -7798,6 +7802,7 @@ class GenerateRenderStyleProperties:
                     self._generate_setters_inlines_function_definition(
                         to=to,
                         function_name=f"set{prefix.id_without_prefix}{edge}",
+                        computed_style_function_name=f"set{prefix.id_without_prefix}{edge}",
                         function_specifiers=function_specifiers,
                         return_type="void",
                         argument_type=argument_type,

@@ -49,9 +49,9 @@ RenderStyle createAnonymousStyleForRuby(const RenderStyle& parentStyle, DisplayT
     ASSERT(display == DisplayType::Ruby || display == DisplayType::RubyBase);
 
     auto style = RenderStyle::createAnonymousStyleWithDisplay(parentStyle, display);
-    style.setUnicodeBidi(UnicodeBidi::Isolate);
+    style.setComputedUnicodeBidi(UnicodeBidi::Isolate);
     if (display == DisplayType::RubyBase)
-        style.setTextWrapMode(TextWrapMode::NoWrap);
+        style.setComputedTextWrapMode(TextWrapMode::NoWrap);
     return style;
 }
 

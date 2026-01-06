@@ -822,7 +822,7 @@ ElementUpdate TreeResolver::createAnimatedElementUpdate(ResolvedStyle&& resolved
             // 1. the old style's display is not none, and
             // 2. the new style has display: none and specifies a transition on display.
             if (oldStyle && oldStyle->hasTransitions() && oldStyle->display() != DisplayType::None && styleHasDisplayTransition(*newStyle) && newStyle->display() == DisplayType::None)
-                newStyle->setDisplay(oldStyle->display());
+                newStyle->setComputedDisplay(oldStyle->display());
             return { WTF::move(newStyle), OptionSet<AnimationImpact> { } };
         }
 

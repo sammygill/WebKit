@@ -231,7 +231,7 @@ void RenderTextControlSingleLine::layout()
         auto usedZoomForLength = placeholderBox->style().usedZoomForLength().value;
         if (innerTextRenderer)
             innerTextWidth = innerTextRenderer->logicalWidth();
-        placeholderBox->mutableStyle().setWidth(Style::PreferredSize::Fixed { (innerTextWidth - placeholderBox->horizontalBorderAndPaddingExtent()) / usedZoomForLength });
+        placeholderBox->mutableStyle().setComputedWidth(Style::PreferredSize::Fixed { (innerTextWidth - placeholderBox->horizontalBorderAndPaddingExtent()) / usedZoomForLength });
         bool neededLayout = placeholderBox->needsLayout();
         bool placeholderBoxHadLayout = placeholderBox->everHadLayout();
         if (innerTextSizeChanged) {
@@ -315,13 +315,13 @@ void RenderTextControlSingleLine::styleDidChange(Style::Difference diff, const R
     // Reset them now to avoid getting a spurious layout hint.
     HTMLElement* innerBlock = innerBlockElement();
     if (auto* innerBlockRenderer = innerBlock ? innerBlock->renderer() : nullptr) {
-        innerBlockRenderer->mutableStyle().setHeight(CSS::Keyword::Auto { });
-        innerBlockRenderer->mutableStyle().setWidth(CSS::Keyword::Auto { });
+        innerBlockRenderer->mutableStyle().setComputedHeight(CSS::Keyword::Auto { });
+        innerBlockRenderer->mutableStyle().setComputedWidth(CSS::Keyword::Auto { });
     }
     HTMLElement* container = containerElement();
     if (auto* containerRenderer = container ? container->renderer() : nullptr) {
-        containerRenderer->mutableStyle().setHeight(CSS::Keyword::Auto { });
-        containerRenderer->mutableStyle().setWidth(CSS::Keyword::Auto { });
+        containerRenderer->mutableStyle().setComputedHeight(CSS::Keyword::Auto { });
+        containerRenderer->mutableStyle().setComputedWidth(CSS::Keyword::Auto { });
     }
     if (diff == Style::DifferenceResult::Layout) {
         if (auto innerTextRenderer = innerTextElement()->renderer())
