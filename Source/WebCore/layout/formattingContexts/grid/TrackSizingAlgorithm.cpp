@@ -61,8 +61,6 @@ struct UnsizedTrack {
     const TrackSizingFunctions trackSizingFunction;
 };
 
-using GridItemIndexes = Vector<size_t>;
-
 struct InflexibleTrackState {
     HashSet<size_t> inflexibleTracks;
 
@@ -94,17 +92,11 @@ struct ResolveIntrinsicTrackSizesContext {
     ResolveIntrinsicTrackSizesContext(const TrackSizingItemList& trackSizingItems, const GridItemSizingFunctions& gridItemSizingFunctions, const TrackSizingFunctionsList& trackSizingFunctionsList)
         : trackSizingItems(trackSizingItems)
         , gridItemSizingFunctions(gridItemSizingFunctions)
-        , trackSizingFunctionsList(trackSizingFunctionsList)
-        , gridItemSpanList(trackSizingItems.map([](auto& gridItem) { return gridItem.spannedLines; }))
-        , computedSizesList(trackSizingItems.map([](auto& gridItem) { return gridItem.computedSizes; }))
-        , borderAndPaddingList(trackSizingItems.map([](auto& gridItem) { return gridItem.borderAndPadding; })) { }
+        , trackSizingFunctionsList(trackSizingFunctionsList) { }
 
     const TrackSizingItemList& trackSizingItems;
     const GridItemSizingFunctions& gridItemSizingFunctions;
     const TrackSizingFunctionsList& trackSizingFunctionsList;
-    const PlacedGridItemSpanList gridItemSpanList;
-    const ComputedSizesList computedSizesList;
-    const UsedBorderAndPaddingList borderAndPaddingList;
 };
 
 // https://drafts.csswg.org/css-grid-1/#algo-find-fr-size
@@ -150,14 +142,11 @@ static bool isValidFlexFactorUnit(const UnsizedTracks& tracks, double hypothetic
     return !hasInvalidTracks;
 }
 
-static GridItemIndexes singleSpanningItemsWithinTrack(size_t trackIndex, const PlacedGridItemSpanList& gridItemSpanList)
+static auto singleSpanningItemsWithinTrack(size_t trackIndex, const TrackSizingItemList& trackSizingItems)
 {
-    GridItemIndexes nonSpanningItems;
-    for (auto [gridItemIndex, gridItemSpan] : WTF::indexedRange(gridItemSpanList)) {
-        if (gridItemSpan.distance() == 1 && gridItemSpan.begin() == trackIndex)
-            nonSpanningItems.append(gridItemIndex);
-    }
-    return nonSpanningItems;
+    return trackSizingItems | std::views::filter([trackIndex](const TrackSizingItem& item) {
+        return item.spannedLines.distance() == 1 && item.spannedLines.begin() == trackIndex;
+    });
 }
 
 using TrackIndexes = Vector<size_t>;
@@ -187,37 +176,37 @@ static TrackIndexes tracksWithAutoMaxTrackSizingFunction(const UnsizedTracks& un
     return trackIndexes;
 }
 
-static Vector<LayoutUnit> minContentContributions(const TrackSizingItemList& trackSizingItems, const GridItemIndexes& gridItemIndexes,
-    const GridItemSizingFunctions& gridItemSizingFunctions)
+template<typename ItemRange>
+static Vector<LayoutUnit> minContentContributions(ItemRange&& items, const GridItemSizingFunctions& gridItemSizingFunctions)
 {
-    return gridItemIndexes.map([&](size_t gridItemIndex) {
-        return gridItemSizingFunctions.minContentContribution(trackSizingItems[gridItemIndex].gridItem, trackSizingItems[gridItemIndex].oppositeAxisConstraint);
-    });
+    return std::forward<ItemRange>(items) | std::views::transform([&](const TrackSizingItem& item) {
+        return gridItemSizingFunctions.minContentContribution(item.gridItem, item.oppositeAxisConstraint);
+    }) | WTF::rangeTo<Vector<LayoutUnit>>();
 }
 
-static Vector<LayoutUnit> maxContentContributions(const TrackSizingItemList& trackSizingItems, const GridItemIndexes& gridItemIndexes,
-    const GridItemSizingFunctions& gridItemSizingFunctions)
+template<typename ItemRange>
+static Vector<LayoutUnit> maxContentContributions(ItemRange&& items, const GridItemSizingFunctions& gridItemSizingFunctions)
 {
-    return gridItemIndexes.map([&](size_t gridItemIndex) {
-        return gridItemSizingFunctions.maxContentContribution(trackSizingItems[gridItemIndex].gridItem, trackSizingItems[gridItemIndex].oppositeAxisConstraint);
-    });
+    return std::forward<ItemRange>(items) | std::views::transform([&](const TrackSizingItem& item) {
+        return gridItemSizingFunctions.maxContentContribution(item.gridItem, item.oppositeAxisConstraint);
+    }) | WTF::rangeTo<Vector<LayoutUnit>>();
 }
 
 // https://www.w3.org/TR/css-grid-2/#algo-single-span-items
-static Vector<LayoutUnit> minimumContributions(const TrackSizingItemList& trackSizingItems, const ComputedSizesList& gridItemComputedSizesList, const UsedBorderAndPaddingList& borderAndPaddingList,
-    const GridItemIndexes& gridItemIndexes, const GridItemSizingFunctions& gridItemSizingFunctions, const TrackSizingFunctionsList& trackSizingFunctions)
+template<typename ItemRange>
+static Vector<LayoutUnit> minimumContributions(ItemRange&& items, const GridItemSizingFunctions& gridItemSizingFunctions, const TrackSizingFunctionsList& trackSizingFunctions)
 {
     // The minimum contribution of an item is the smallest outer size it can have. Specifically,
-    return gridItemIndexes.map([&](size_t gridItemIndex) -> LayoutUnit {
+    return std::forward<ItemRange>(items) | std::views::transform([&](const TrackSizingItem& item) -> LayoutUnit {
         // if the item’s computed preferred size behaves as auto or depends on the size of its
         // containing block in the relevant axis, its minimum contribution is the outer size
         // that would result from assuming the item’s used minimum size as its preferred size.
-        auto& preferredSize = gridItemComputedSizesList[gridItemIndex].preferredSize;
+        auto& preferredSize = item.computedSizes.preferredSize;
         if (GridLayoutUtils::preferredSizeBehavesAsAuto(preferredSize) || GridLayoutUtils::preferredSizeDependsOnContainingBlockSize(preferredSize))
-            return gridItemSizingFunctions.usedMinimumSize(trackSizingItems[gridItemIndex].gridItem, trackSizingFunctions, borderAndPaddingList[gridItemIndex], { }, trackSizingItems[gridItemIndex].oppositeAxisConstraint);
+            return gridItemSizingFunctions.usedMinimumSize(item.gridItem, trackSizingFunctions, item.borderAndPadding, { }, item.oppositeAxisConstraint);
         // else the item’s minimum contribution is its min-content contribution.
-        return gridItemSizingFunctions.minContentContribution(trackSizingItems[gridItemIndex].gridItem, trackSizingItems[gridItemIndex].oppositeAxisConstraint);
-    });
+        return gridItemSizingFunctions.minContentContribution(item.gridItem, item.oppositeAxisConstraint);
+    }) | WTF::rangeTo<Vector<LayoutUnit>>();
 }
 
 // https://drafts.csswg.org/css-grid-1/#algo-single-span-items
@@ -230,15 +219,14 @@ static void sizeTracksToFitNonSpanningItems(const ResolveIntrinsicTrackSizesCont
     // For each track with an intrinsic track sizing function and not a flexible sizing function, consider the items in it with a span of 1:
     for (auto trackIndex : tracksWithIntrinsicSizingFunction(unsizedTracks)) {
         auto& track = unsizedTracks[trackIndex];
-        auto singleSpanningItemsIndexes = singleSpanningItemsWithinTrack(trackIndex, resolveIntrinsicTrackSizesContext.gridItemSpanList);
+        auto singleSpanningItems = singleSpanningItemsWithinTrack(trackIndex, trackSizingItems);
 
         auto& minimumTrackSizingFunction = track.trackSizingFunction.min;
         track.baseSize = WTF::switchOn(minimumTrackSizingFunction,
             [&](const CSS::Keyword::MinContent&) -> LayoutUnit {
                 // If the track has a min-content min track sizing function, set its base size
                 // to the maximum of the items’ min-content contributions, floored at zero.
-                auto itemContributions = minContentContributions(trackSizingItems, singleSpanningItemsIndexes, gridItemSizingFunctions);
-                ASSERT(itemContributions.size() == singleSpanningItemsIndexes.size());
+                auto itemContributions = minContentContributions(singleSpanningItems, gridItemSizingFunctions);
                 if (itemContributions.isEmpty())
                     return { };
                 return std::max({ }, std::ranges::max(itemContributions));
@@ -246,8 +234,7 @@ static void sizeTracksToFitNonSpanningItems(const ResolveIntrinsicTrackSizesCont
             [&](const CSS::Keyword::MaxContent&) -> LayoutUnit {
                 // If the track has a max-content min track sizing function, set its base
                 // size to the maximum of the items’ max-content contributions, floored at zero.
-                auto itemContributions = maxContentContributions(trackSizingItems, singleSpanningItemsIndexes, gridItemSizingFunctions);
-                ASSERT(itemContributions.size() == singleSpanningItemsIndexes.size());
+                auto itemContributions = maxContentContributions(singleSpanningItems, gridItemSizingFunctions);
                 if (itemContributions.isEmpty())
                     return { };
                 return std::max({ }, std::ranges::max(itemContributions));
@@ -267,7 +254,7 @@ static void sizeTracksToFitNonSpanningItems(const ResolveIntrinsicTrackSizesCont
                 }
                 // Otherwise, set the track’s base size to the maximum of its items’ minimum
                 // contributions, floored at zero.
-                auto contributions = minimumContributions(trackSizingItems, resolveIntrinsicTrackSizesContext.computedSizesList, resolveIntrinsicTrackSizesContext.borderAndPaddingList, singleSpanningItemsIndexes, gridItemSizingFunctions, resolveIntrinsicTrackSizesContext.trackSizingFunctionsList);
+                auto contributions = minimumContributions(singleSpanningItems, gridItemSizingFunctions, resolveIntrinsicTrackSizesContext.trackSizingFunctionsList);
                 if (contributions.isEmpty())
                     return { };
                 return std::max({ }, std::ranges::max(contributions));
@@ -283,8 +270,7 @@ static void sizeTracksToFitNonSpanningItems(const ResolveIntrinsicTrackSizesCont
             [&](const CSS::Keyword::MinContent&) -> LayoutUnit {
                 // If the track has a min-content max track sizing function, set its growth
                 // limit to the maximum of the items’ min-content contributions.
-                auto itemContributions = minContentContributions(trackSizingItems, singleSpanningItemsIndexes, gridItemSizingFunctions);
-                ASSERT(itemContributions.size() == singleSpanningItemsIndexes.size());
+                auto itemContributions = minContentContributions(singleSpanningItems, gridItemSizingFunctions);
                 if (itemContributions.isEmpty())
                     return { };
                 return std::ranges::max(itemContributions);
@@ -292,7 +278,7 @@ static void sizeTracksToFitNonSpanningItems(const ResolveIntrinsicTrackSizesCont
             [&](const CSS::Keyword::MaxContent&) -> LayoutUnit {
                 // If the track has a max-content max track sizing function, set its growth
                 // limit to the maximum of the items’ max-content contributions.
-                auto itemContributions = maxContentContributions(trackSizingItems, singleSpanningItemsIndexes, gridItemSizingFunctions);
+                auto itemContributions = maxContentContributions(singleSpanningItems, gridItemSizingFunctions);
                 auto maximumMaxContentContribution = itemContributions.isEmpty() ? 0_lu : std::ranges::max(itemContributions);
                 return maximumMaxContentContribution;
             },
@@ -300,7 +286,7 @@ static void sizeTracksToFitNonSpanningItems(const ResolveIntrinsicTrackSizesCont
                 // Since it is not explicitly stated otherwise in the spec, auto is treated as max-content:
                 // If the track has a max-content max track sizing function, set its growth
                 // limit to the maximum of the items’ max-content contributions.
-                auto itemContributions = maxContentContributions(trackSizingItems, singleSpanningItemsIndexes, gridItemSizingFunctions);
+                auto itemContributions = maxContentContributions(singleSpanningItems, gridItemSizingFunctions);
                 auto maximumMaxContentContribution = itemContributions.isEmpty() ? 0_lu : std::ranges::max(itemContributions);
                 return maximumMaxContentContribution;
             },
