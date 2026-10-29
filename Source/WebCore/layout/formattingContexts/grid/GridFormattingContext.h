@@ -72,6 +72,12 @@ struct GridLayoutResult {
 
     size_t leadingImplicitColumnsCount { 0 };
     size_t leadingImplicitRowsCount { 0 };
+
+    // Legacy-state-only: the collapsed repeat(auto-fit) tracks, indexed in the same space as
+    // usedTrackSizes (i.e. including the leading implicit tracks). Integration writes them back to
+    // RenderGrid, which reads them to place out-of-flow boxes.
+    BitVector collapsedColumnTracks;
+    BitVector collapsedRowTracks;
 };
 
 // The number of implicit tracks generated before the start of the explicit grid, per axis, because

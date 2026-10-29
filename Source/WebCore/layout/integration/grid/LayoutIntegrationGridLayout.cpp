@@ -222,7 +222,7 @@ void GridLayout::updateGridItemGridAreas(const Layout::UsedTrackSizes& usedTrack
     }
 }
 
-void GridLayout::updateFormattingContextRootRenderer(const Layout::UsedTrackSizes& usedTrackSizes, LayoutUnit usedBlockContentSize, const Layout::GridItemRects& gridItemRects, size_t autoRepeatColumnsCount, size_t autoRepeatRowsCount, size_t leadingImplicitColumnsCount, size_t leadingImplicitRowsCount)
+void GridLayout::updateFormattingContextRootRenderer(const Layout::UsedTrackSizes& usedTrackSizes, LayoutUnit usedBlockContentSize, const Layout::GridItemRects& gridItemRects, size_t autoRepeatColumnsCount, size_t autoRepeatRowsCount, size_t leadingImplicitColumnsCount, size_t leadingImplicitRowsCount, const BitVector& collapsedColumnTracks, const BitVector& collapsedRowTracks)
 {
     CheckedRef renderGrid = gridBoxRenderer();
     auto& currentGrid = renderGrid->currentGrid();
@@ -239,6 +239,11 @@ void GridLayout::updateFormattingContextRootRenderer(const Layout::UsedTrackSize
     }
     currentGrid.setNeedsItemsPlacement(false);
 
+    // gridAreaRangeForOutOfFlow reads the content-distribution offsets, which only legacy layout computes. Drop what a
+    // previous legacy layout left behind (e.g. for justify-content: space-between).
+    renderGrid->offsetBetweenTracks(Style::GridTrackSizingDirection::Columns) = { };
+    renderGrid->offsetBetweenTracks(Style::GridTrackSizingDirection::Rows) = { };
+
     // Nothing else resets the legacy grid between GFC layouts, so its size has to follow the used tracks in
     // both directions: gridAreaRangeForOutOfFlow relies on numTracks() to tell the last line from an interior one.
     // This has to precede setAutoRepeatTracks, which asserts on the track count.
@@ -248,6 +253,19 @@ void GridLayout::updateFormattingContextRootRenderer(const Layout::UsedTrackSize
     // grid it computes from style plus these auto-repeated track counts, offset by the explicit grid start.
     currentGrid.setAutoRepeatTracks(autoRepeatRowsCount, autoRepeatColumnsCount);
     currentGrid.setExplicitGridStart(leadingImplicitRowsCount, leadingImplicitColumnsCount);
+
+    // Legacy placement of out-of-flow boxes treats the collapsed repeat(auto-fit) tracks as the grid's
+    // "empty auto-repeat tracks". The indexes are in the same space (leading implicit tracks included).
+    auto emptyTrackIndexes = [](const BitVector& collapsedTracks) -> std::unique_ptr<OrderedTrackIndexSet> {
+        if (collapsedTracks.isEmpty())
+            return nullptr;
+        auto emptyTracks = makeUnique<OrderedTrackIndexSet>();
+        for (auto trackIndex : collapsedTracks)
+            emptyTracks->add(trackIndex);
+        return emptyTracks;
+    };
+    currentGrid.setAutoRepeatEmptyColumns(emptyTrackIndexes(collapsedColumnTracks));
+    currentGrid.setAutoRepeatEmptyRows(emptyTrackIndexes(collapsedRowTracks));
 
     OrderIteratorPopulator orderIteratorPopulator(currentGrid.orderIterator());
 
@@ -298,11 +316,12 @@ void GridLayout::layout()
 
     auto [ usedTrackSizes, gridItemRects, usedBlockContentSize,
         autoRepeatColumnsCount, autoRepeatRowsCount,
-        leadingImplicitColumnsCount, leadingImplicitRowsCount ] = Layout::GridFormattingContext { gridBox(), protect(layoutState()) }.layout(gridLayoutConstraints);
+        leadingImplicitColumnsCount, leadingImplicitRowsCount,
+        collapsedColumnTracks, collapsedRowTracks ] = Layout::GridFormattingContext { gridBox(), protect(layoutState()) }.layout(gridLayoutConstraints);
     updateGridItemRenderers(previousGridItemRects);
     updateGridItemGridAreas(usedTrackSizes, gridItemRects);
-    updateFormattingContextRootRenderer(usedTrackSizes, usedBlockContentSize, gridItemRects, autoRepeatColumnsCount, autoRepeatRowsCount, leadingImplicitColumnsCount, leadingImplicitRowsCount);
-    populateGridPositions(usedTrackSizes);
+    updateFormattingContextRootRenderer(usedTrackSizes, usedBlockContentSize, gridItemRects, autoRepeatColumnsCount, autoRepeatRowsCount, leadingImplicitColumnsCount, leadingImplicitRowsCount, collapsedColumnTracks, collapsedRowTracks);
+    populateGridPositions(usedTrackSizes, collapsedColumnTracks, collapsedRowTracks);
     layoutOutOfFlowBoxes();
 
     CheckedRef renderGrid = gridBoxRenderer();
@@ -388,7 +407,7 @@ void GridLayout::layoutOutOfFlowBoxes()
 
 // Keep RenderGrid's grid state consistent with the result of layout, whether or not the grid has out-of-flow
 // boxes, since clients other than out-of-flow layout read it (e.g. getComputedStyle, the Web Inspector grid overlay).
-void GridLayout::populateGridPositions(const Layout::UsedTrackSizes& usedTrackSizes)
+void GridLayout::populateGridPositions(const Layout::UsedTrackSizes& usedTrackSizes, const BitVector& collapsedColumnTracks, const BitVector& collapsedRowTracks)
 {
     CheckedRef renderGrid = gridBoxRenderer();
 
@@ -398,16 +417,33 @@ void GridLayout::populateGridPositions(const Layout::UsedTrackSizes& usedTrackSi
         auto gap = Layout::GridFormattingContext::usedGapValue(isColumns ? renderGrid->style().columnGap() : renderGrid->style().rowGap(), renderGrid->style());
         auto borderAndPadding = isColumns ? renderGrid->borderAndPaddingStart() : renderGrid->borderAndPaddingBefore();
         auto numberOfTracks = trackSizes.size();
-        bool hasMultipleTracks = numberOfTracks > 1;
 
         auto& positions = renderGrid->positions(direction);
         positions.resize(numberOfTracks + 1);
         positions[0] = borderAndPadding;
-        for (auto [trackIndex, trackSize] : WTF::indexedRange(trackSizes)) {
-            bool isLastTrack = trackIndex == numberOfTracks - 1;
-            auto gapAfterTrack = (!isLastTrack && hasMultipleTracks) ? gap : 0_lu;
-            positions[trackIndex + 1] = positions[trackIndex] + trackSize + gapAfterTrack;
+        for (auto [trackIndex, trackSize] : WTF::indexedRange(trackSizes))
+            positions[trackIndex + 1] = positions[trackIndex] + trackSize;
+
+        // https://drafts.csswg.org/css-grid-1/#collapsed-gutter
+        // A collapsed track's gutters coincide, so the gutter around it is added once, and no gutter is
+        // added next to collapsed tracks at the edges of the grid. A gutter follows every other track
+        // except the last one.
+        auto& collapsedTracks = isColumns ? collapsedColumnTracks : collapsedRowTracks;
+        size_t remainingCollapsedTracks = collapsedTracks.bitCount();
+        LayoutUnit gapsBeforeLine;
+        for (size_t line = 1; line < numberOfTracks; ++line) {
+            if (collapsedTracks.get(line - 1))
+                --remainingCollapsedTracks;
+            else {
+                // Only collapsed tracks follow this line when they are all the tracks left.
+                bool onlyCollapsedTracksFollow = remainingCollapsedTracks == numberOfTracks - line && collapsedTracks.get(line);
+                if (!onlyCollapsedTracksFollow)
+                    gapsBeforeLine += gap;
+            }
+            positions[line] += gapsBeforeLine;
         }
+        if (numberOfTracks)
+            positions[numberOfTracks] += gapsBeforeLine;
     };
 
     populate(Style::GridTrackSizingDirection::Columns);
