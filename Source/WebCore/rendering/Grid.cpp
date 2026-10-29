@@ -56,6 +56,22 @@ void Grid::ensureGridSize(unsigned maximumRowSize, unsigned maximumColumnSize)
     }
 }
 
+void Grid::setGridSize(unsigned rowCount, unsigned columnCount)
+{
+    if (rowCount < m_grid.size())
+        m_grid.shrink(rowCount);
+    ensureGridSize(rowCount, columnCount);
+
+    // Only the first row records the number of columns, see ensureGridSize.
+    if (rowCount && columnCount < m_grid[0].size())
+        m_grid[0].shrink(columnCount);
+
+#if ASSERT_ENABLED
+    for (size_t row = 1; row < m_grid.size(); ++row)
+        ASSERT(m_grid[row].size() <= m_grid[0].size());
+#endif
+}
+
 void Grid::ensureStorageForRow(unsigned row)
 {
     m_grid[row].grow(m_grid[0].size());

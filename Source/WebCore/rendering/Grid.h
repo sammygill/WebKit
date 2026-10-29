@@ -49,6 +49,8 @@ public:
     unsigned LEGACY_NODELETE numTracks(Style::GridTrackSizingDirection) const;
 
     void ensureGridSize(unsigned maximumRowSize, unsigned maximumColumnSize);
+    // Unlike ensureGridSize, this also shrinks the grid so that numTracks() matches exactly.
+    void setGridSize(unsigned rowCount, unsigned columnCount);
     GridArea insert(RenderBox&, const GridArea&);
 
     // Note that each in flow child of a grid container becomes a grid item. This means that
