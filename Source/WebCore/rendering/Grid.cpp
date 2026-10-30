@@ -62,9 +62,12 @@ void Grid::setGridSize(unsigned rowCount, unsigned columnCount)
         m_grid.shrink(rowCount);
     ensureGridSize(rowCount, columnCount);
 
-    // Only the first row records the number of columns, see ensureGridSize.
-    if (rowCount && columnCount < m_grid[0].size())
-        m_grid[0].shrink(columnCount);
+    // Only the first row records the number of columns, see ensureGridSize. The other rows are allocated lazily and
+    // may be as wide as the first row was, so they have to shrink too to keep rows >= 1 no wider than row 0.
+    for (auto& row : m_grid) {
+        if (columnCount < row.size())
+            row.shrink(columnCount);
+    }
 
 #if ASSERT_ENABLED
     for (size_t row = 1; row < m_grid.size(); ++row)
