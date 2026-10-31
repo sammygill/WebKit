@@ -69,6 +69,9 @@ public:
 
     unsigned LEGACY_NODELETE autoRepeatTracks(Style::GridTrackSizingDirection) const;
     void LEGACY_NODELETE setAutoRepeatTracks(unsigned autoRepeatRows, unsigned autoRepeatColumns);
+    // Whether the limit on the number of grid tracks left out repetitions of the auto-repeat that would have fitted.
+    bool LEGACY_NODELETE autoRepeatTruncatedByLimit(Style::GridTrackSizingDirection) const;
+    void LEGACY_NODELETE setAutoRepeatTruncatedByLimit(bool rows, bool columns);
 
     void LEGACY_NODELETE setClampingForSubgrid(unsigned maxRows, unsigned maxColumns);
 
@@ -102,6 +105,8 @@ private:
 
     unsigned m_autoRepeatColumns { 0 };
     unsigned m_autoRepeatRows { 0 };
+    bool m_autoRepeatColumnsTruncatedByLimit { false };
+    bool m_autoRepeatRowsTruncatedByLimit { false };
 
     unsigned m_maxColumns { 0 };
     unsigned m_maxRows { 0 };

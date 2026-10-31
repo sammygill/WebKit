@@ -357,6 +357,8 @@ void GridLayout::updateFormattingContextRootRenderer(const Layout::UsedTrackSize
     // Out-of-flow boxes are placed by RenderGrid, which resolves their grid lines against the explicit
     // grid it computes from style plus these auto-repeated track counts, offset by the explicit grid start.
     currentGrid.setAutoRepeatTracks(autoRepeatRowsCount, autoRepeatColumnsCount);
+    // GFC does not limit the number of tracks yet, so it never cuts the auto-repeat.
+    currentGrid.setAutoRepeatTruncatedByLimit(false, false);
     currentGrid.setExplicitGridStart(leadingImplicitRowsCount, leadingImplicitColumnsCount);
 
     // Legacy placement of out-of-flow boxes treats the collapsed repeat(auto-fit) tracks as the grid's
