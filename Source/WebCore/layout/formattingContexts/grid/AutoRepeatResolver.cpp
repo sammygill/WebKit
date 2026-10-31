@@ -104,7 +104,7 @@ static size_t repetitionsToFill(const Vector<Style::GridTrackSize>& autoRepeatTr
 }
 
 // https://drafts.csswg.org/css-grid-1/#auto-repeat
-size_t AutoRepeatResolver::resolveRepetitions(const Style::GridTemplateList& gridTemplateList, const AutoRepeatConstraint& autoRepeatConstraint, LayoutUnit usedGap, Style::ZoomFactor zoom)
+static size_t unboundedRepetitions(const Style::GridTemplateList& gridTemplateList, const AutoRepeatConstraint& autoRepeatConstraint, LayoutUnit usedGap, Style::ZoomFactor zoom)
 {
     auto& gridTemplateListSizes = gridTemplateList.sizes;
     auto& autoRepeatSizes = gridTemplateList.autoRepeatSizes;
@@ -124,6 +124,27 @@ size_t AutoRepeatResolver::resolveRepetitions(const Style::GridTemplateList& gri
         return repetitionsToFill(autoRepeatSizes, *containerMinimumSize, nonRepeatedTracksSpace(gridTemplateListSizes, *containerMinimumSize, usedGap, zoom), usedGap, RepeatStrategy::SmallestFulfillingSize, zoom);
     // "Otherwise, the specified track list repeats only once."
     return 1;
+}
+
+// https://drafts.csswg.org/css-grid-1/#overlarge-grids
+// The auto-repeat has no limit of its own, but the grid is limited to maxTracks tracks and "all lines outside that limit"
+// are dropped. Repetitions that start past the limit would be dropped entirely, so they are not created: this keeps a
+// huge container from allocating millions of tracks. The last repetition that crosses the limit is kept whole here and
+// ExplicitGridResolver truncates the track list to the limit.
+AutoRepeatResolver::Repetitions AutoRepeatResolver::resolveRepetitions(const Style::GridTemplateList& gridTemplateList, const AutoRepeatConstraint& autoRepeatConstraint, LayoutUnit usedGap, Style::ZoomFactor zoom, size_t maxTracks)
+{
+    auto repetitions = unboundedRepetitions(gridTemplateList, autoRepeatConstraint, usedGap, zoom);
+
+    auto firstAutoRepeatTrackIndex = gridTemplateList.autoRepeatInsertionPoint;
+    if (firstAutoRepeatTrackIndex >= maxTracks)
+        return { 0, true };
+    auto tracksPerRepetition = gridTemplateList.autoRepeatSizes.size();
+    auto repetitionsToReachLimit = (maxTracks - firstAutoRepeatTrackIndex + tracksPerRepetition - 1) / tracksPerRepetition;
+    // The limit cuts the auto-repeat when the unbounded repetitions do not all fit in the tracks left before it. This is not the same as
+    // the capped count being smaller: a last repetition that crosses the limit is kept whole here, and is still cut by it.
+    // Compared by division so that a huge repetition count cannot overflow.
+    auto truncatedByLimit = repetitions > (maxTracks - firstAutoRepeatTrackIndex) / tracksPerRepetition;
+    return { std::min(repetitions, repetitionsToReachLimit), truncatedByLimit };
 }
 
 } // namespace Layout

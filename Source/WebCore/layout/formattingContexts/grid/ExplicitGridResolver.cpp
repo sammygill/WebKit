@@ -34,12 +34,12 @@
 namespace WebCore {
 namespace Layout {
 
-ExplicitGridTrackSizes ExplicitGridResolver::resolve(const Style::ComputedStyle& gridContainerStyle, const AutoRepeatConstraint& inlineAxisAutoRepeatConstraint, const AutoRepeatConstraint& blockAxisAutoRepeatConstraint, LayoutUnit usedColumnGap, LayoutUnit usedRowGap)
+ExplicitGridTrackSizes ExplicitGridResolver::resolve(const Style::ComputedStyle& gridContainerStyle, const AutoRepeatConstraint& inlineAxisAutoRepeatConstraint, const AutoRepeatConstraint& blockAxisAutoRepeatConstraint, LayoutUnit usedColumnGap, LayoutUnit usedRowGap, size_t maxTracks)
 {
     auto zoom = gridContainerStyle.usedZoomForLength();
-    auto resolvedColumns = resolveTrackSizes(gridContainerStyle.gridTemplateColumns(), inlineAxisAutoRepeatConstraint, usedColumnGap, zoom);
-    auto resolvedRows = resolveTrackSizes(gridContainerStyle.gridTemplateRows(), blockAxisAutoRepeatConstraint, usedRowGap, zoom);
-    return { WTF::move(resolvedColumns.trackSizes), WTF::move(resolvedRows.trackSizes), resolvedColumns.autoRepeatTracksIndexes, resolvedRows.autoRepeatTracksIndexes };
+    auto resolvedColumns = resolveTrackSizes(gridContainerStyle.gridTemplateColumns(), inlineAxisAutoRepeatConstraint, usedColumnGap, zoom, maxTracks);
+    auto resolvedRows = resolveTrackSizes(gridContainerStyle.gridTemplateRows(), blockAxisAutoRepeatConstraint, usedRowGap, zoom, maxTracks);
+    return { WTF::move(resolvedColumns.trackSizes), WTF::move(resolvedRows.trackSizes), resolvedColumns.autoRepeatTracksIndexes, resolvedRows.autoRepeatTracksIndexes, resolvedColumns.autoRepeatTruncatedByLimit, resolvedRows.autoRepeatTruncatedByLimit };
 }
 
 // Style keeps the auto-repeated tracks apart from the rest of the track list, so splice
@@ -60,15 +60,25 @@ static Vector<Style::GridTrackSize> trackSizesWithAutoRepetitions(const Style::G
     return trackSizes;
 }
 
-ExplicitGridResolver::ResolveTrackSizesResult ExplicitGridResolver::resolveTrackSizes(const Style::GridTemplateList& gridTemplateList, const AutoRepeatConstraint& autoRepeatConstraint, LayoutUnit usedGap, Style::ZoomFactor zoom)
+ExplicitGridResolver::ResolveTrackSizesResult ExplicitGridResolver::resolveTrackSizes(const Style::GridTemplateList& gridTemplateList, const AutoRepeatConstraint& autoRepeatConstraint, LayoutUnit usedGap, Style::ZoomFactor zoom, size_t maxTracks)
 {
     auto& autoRepeatSizes = gridTemplateList.autoRepeatSizes;
+    // https://drafts.csswg.org/css-grid-1/#overlarge-grids
+    // "UAs may clamp the possible size of the implicit grid to be within a UA-defined limit, dropping all lines outside that
+    // limit." The explicit grid is cut to the limit so that negative lines are resolved against the grid that is kept.
+    auto truncatedToLimit = [&](Vector<Style::GridTrackSize>&& trackSizes) {
+        if (trackSizes.size() > maxTracks)
+            trackSizes.shrink(maxTracks);
+        return WTF::move(trackSizes);
+    };
     if (gridTemplateList.autoRepeatType == AutoRepeatType::None || autoRepeatSizes.isEmpty())
-        return { gridTemplateList.sizes, { } };
+        return { truncatedToLimit(Vector<Style::GridTrackSize> { gridTemplateList.sizes }), { }, false };
 
-    auto repetitionCount = AutoRepeatResolver::resolveRepetitions(gridTemplateList, autoRepeatConstraint, usedGap, zoom);
-    auto firstAutoRepeatTrackIndex = gridTemplateList.autoRepeatInsertionPoint;
-    return { trackSizesWithAutoRepetitions(gridTemplateList, repetitionCount), { firstAutoRepeatTrackIndex, firstAutoRepeatTrackIndex + repetitionCount * autoRepeatSizes.size() } };
+    auto [repetitionCount, truncatedByLimit] = AutoRepeatResolver::resolveRepetitions(gridTemplateList, autoRepeatConstraint, usedGap, zoom, maxTracks);
+    // The auto-repeated tracks that are dropped are not part of the explicit grid.
+    auto firstAutoRepeatTrackIndex = std::min<size_t>(gridTemplateList.autoRepeatInsertionPoint, maxTracks);
+    auto lastAutoRepeatTrackIndex = std::min(gridTemplateList.autoRepeatInsertionPoint + repetitionCount * autoRepeatSizes.size(), maxTracks);
+    return { truncatedToLimit(trackSizesWithAutoRepetitions(gridTemplateList, repetitionCount)), { firstAutoRepeatTrackIndex, lastAutoRepeatTrackIndex }, truncatedByLimit };
 }
 
 } // namespace Layout

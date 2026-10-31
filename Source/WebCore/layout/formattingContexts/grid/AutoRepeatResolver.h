@@ -41,7 +41,13 @@ struct AutoRepeatConstraint;
 // https://drafts.csswg.org/css-grid-1/#auto-repeat
 class AutoRepeatResolver {
 public:
-    static size_t resolveRepetitions(const Style::GridTemplateList&, const AutoRepeatConstraint&, LayoutUnit usedGap, Style::ZoomFactor);
+    struct Repetitions {
+        size_t count { 0 };
+        // The limit on the number of tracks left out repetitions, or part of the last one, that the container would have fitted.
+        bool truncatedByLimit { false };
+    };
+    // maxTracks is the most tracks the grid may have (https://drafts.csswg.org/css-grid-1/#overlarge-grids).
+    static Repetitions resolveRepetitions(const Style::GridTemplateList&, const AutoRepeatConstraint&, LayoutUnit usedGap, Style::ZoomFactor, size_t maxTracks);
 };
 
 } // namespace Layout
