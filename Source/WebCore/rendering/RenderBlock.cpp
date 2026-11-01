@@ -3297,6 +3297,11 @@ RenderBox* RenderBlock::findFieldsetLegend(FieldsetFindLegendOption option) cons
     return { };
 }
 
+RenderBox* RenderBlock::renderedFieldsetLegend() const
+{
+    return isFieldset() ? findFieldsetLegend() : nullptr;
+}
+
 void RenderBlock::adjustBorderBoxRectForPainting(LayoutRect& paintRect)
 {
     if (!isFieldset() || !intrinsicBorderForFieldset())
