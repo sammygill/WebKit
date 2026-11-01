@@ -287,12 +287,17 @@ void BoxTreeUpdater::buildTreeForFlexContent()
 
 void BoxTreeUpdater::buildTreeForGridContent()
 {
+    // The rendered legend of a fieldset sits in the border and is not a grid item, so it has no layout box.
+    CheckedPtr renderedLegend = m_rootRenderer.renderedFieldsetLegend();
+    CheckedPtr<const RenderElement> previousGridItemRenderer;
     for (CheckedRef gridItemRenderer : childrenOfType<RenderElement>(m_rootRenderer)) {
-        if (auto existingChildBox = gridItemRenderer->layoutBox()) {
-            insertChild(existingChildBox->removeFromParent(), gridItemRenderer.get(), gridItemRenderer->previousSibling());
+        if (&gridItemRenderer.get() == renderedLegend.get())
             continue;
-        }
-        insertChild(createLayoutBox(gridItemRenderer.get()), gridItemRenderer.get(), gridItemRenderer->previousSibling());
+        if (auto existingChildBox = gridItemRenderer->layoutBox())
+            insertChild(existingChildBox->removeFromParent(), gridItemRenderer.get(), previousGridItemRenderer.get());
+        else
+            insertChild(createLayoutBox(gridItemRenderer.get()), gridItemRenderer.get(), previousGridItemRenderer.get());
+        previousGridItemRenderer = gridItemRenderer.ptr();
     }
 }
 
